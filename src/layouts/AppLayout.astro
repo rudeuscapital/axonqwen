@@ -1,0 +1,145 @@
+---
+// AppLayout.astro — Ollama status checked client-side (user's local Ollama)
+import '../styles/global.css';
+
+const { title = 'Dashboard', active = 'dashboard' } = Astro.props;
+
+const nav = [
+  { id:'dashboard', label:'Dashboard',   icon:'⬡', href:'/app'          },
+  { id:'chat',      label:'Chat Agent',  icon:'◈', href:'/app/chat'     },
+  { id:'agents',    label:'Agents',      icon:'◎', href:'/app/agents'   },
+  { id:'browser',   label:'Browser RPA', icon:'⬟', href:'/app/browser'  },
+  { id:'scraper',   label:'Scraper',     icon:'◉', href:'/app/scraper'  },
+  { id:'vision',    label:'Vision',      icon:'◑', href:'/app/vision'   },
+  { id:'monitor',   label:'Monitor',     icon:'⊕', href:'/app/monitor'  },
+  { id:'tasks',     label:'Tasks',       icon:'▦',  href:'/app/tasks'    },
+  { id:'logs',      label:'Logs',        icon:'≡',  href:'/app/logs'     },
+  { id:'settings',  label:'Settings',   icon:'⚙',  href:'/app/settings' },
+];
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <link rel="icon" type="image/png" href="/logo.png"/>
+  <title>{title} — AxonQwen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="bg-ink text-white font-mono antialiased h-screen flex overflow-hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="w-56 flex-shrink-0 border-r border-dim flex flex-col bg-[#02040a]">
+    <div class="px-5 py-5 border-b border-dim">
+      <a href="/" class="flex items-center gap-2.5">
+        <img src="/logo.png" alt="AxonQwen" class="w-7 h-7 rounded-lg object-contain"/>
+        <span class="font-display font-bold text-sm tracking-tight">Axon<span class="text-accent">Qwen</span></span>
+      </a>
+    </div>
+
+    <!-- Ollama status (checked client-side against user's local Ollama) -->
+    <div class="mx-4 mt-4 px-3 py-2 rounded-lg bg-wire border border-dim flex items-center gap-2 text-xs" id="status-pill">
+      <span class="w-2 h-2 rounded-full bg-muted animate-pulse-dot" id="status-dot"></span>
+      <span class="text-muted" id="status-text">Checking…</span>
+    </div>
+
+    <nav class="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
+      {nav.map(item => (
+        <a href={item.href}
+           class={`sidebar-link ${active === item.id ? 'active' : ''}`}>
+          <span class="text-base w-5 text-center opacity-70">{item.icon}</span>
+          <span class="text-[13px]">{item.label}</span>
+          {active === item.id && <span class="ml-auto w-1.5 h-1.5 rounded-full bg-accent"></span>}
+        </a>
+      ))}
+    </nav>
+
+    <div class="px-5 py-4 border-t border-dim">
+      <div class="text-[10px] text-muted/50">AxonQwen v1.0.0 — SSR</div>
+      <div class="text-[10px] text-muted/30 mt-0.5" id="ollama-url-display">localhost:11434</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <header class="h-14 flex-shrink-0 border-b border-dim flex items-center justify-between px-6 bg-[#02040a]/80 backdrop-blur-sm">
+      <h1 class="font-display font-bold text-sm text-white/80 tracking-wide uppercase">{title}</h1>
+      <div class="flex items-center gap-3">
+        <span id="ws-badge" class="text-[10px] px-2.5 py-1 rounded-full border border-dim text-muted font-mono">● WS</span>
+        <a href="/" class="text-xs text-muted hover:text-white transition-colors px-3 py-1.5 rounded-lg border border-dim">← Docs</a>
+      </div>
+    </header>
+
+    <div id="ollama-banner" class="bg-accent2/10 border-b border-accent2/20 px-6 py-3 items-center gap-4 flex-shrink-0" style="display:none">
+      <div class="flex items-center gap-2 text-accent2 text-sm font-mono">
+        <span class="w-2 h-2 rounded-full bg-accent2 animate-pulse-dot flex-shrink-0"></span>
+        <span class="font-bold">Ollama tidak terhubung</span>
+      </div>
+      <p class="text-accent2/70 text-xs font-mono hidden sm:block" id="ollama-banner-msg">
+        — Pastikan Ollama sudah terinstall dan berjalan di komputer Anda.
+      </p>
+      <a href="/#quickstart" class="ml-auto text-xs px-3 py-1.5 rounded-lg bg-accent2/20 border border-accent2/30 text-accent2 hover:bg-accent2/30 transition-all font-mono flex-shrink-0 whitespace-nowrap">
+        Lihat Setup Guide →
+      </a>
+    </div>
+
+    <main class="flex-1 overflow-auto p-6">
+      <slot/>
+    </main>
+  </div>
+
+  <!-- Client-side: Ollama status check + WebSocket -->
+  <script>
+    // ── Check user's local Ollama ──
+    (async function checkOllamaStatus() {
+      const dot    = document.getElementById('status-dot');
+      const text   = document.getElementById('status-text');
+      const banner = document.getElementById('ollama-banner');
+      const urlEl  = document.getElementById('ollama-url-display');
+      const bannerMsg = document.getElementById('ollama-banner-msg');
+
+      let settings: any = {};
+      try { settings = JSON.parse(localStorage.getItem('axonqwen-settings') || '{}'); } catch {}
+      const url = settings.ollamaUrl || 'http://localhost:11434';
+
+      if (urlEl) urlEl.textContent = url.replace(/^https?:\/\//, '');
+
+      try {
+        const r = await fetch(`${url}/api/tags`, { signal: AbortSignal.timeout(4000) });
+        if (!r.ok) throw new Error();
+        const data = await r.json();
+        const name = data.models?.[0]?.name?.split(':')[0] || settings.model || 'qwen3.5';
+        if (dot)  { dot.className = 'w-2 h-2 rounded-full bg-green-400 animate-pulse-dot'; }
+        if (text) { text.textContent = name; }
+        if (banner) { banner.style.display = 'none'; }
+      } catch {
+        if (dot)  { dot.className = 'w-2 h-2 rounded-full bg-accent2 animate-pulse-dot'; }
+        if (text) { text.textContent = 'Ollama offline'; }
+        if (banner) { banner.style.display = 'flex'; }
+        if (bannerMsg) { bannerMsg.innerHTML = `— Tidak dapat terhubung ke <code class="text-accent2">${url}</code>. Pastikan Ollama sudah terinstall dan berjalan.`; }
+      }
+      setTimeout(checkOllamaStatus, 30000);
+    })();
+
+    // ── WebSocket connection ──
+    (function connectWS() {
+      const badge = document.getElementById('ws-badge');
+      const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const ws = new WebSocket(`${proto}//${location.host}/_ws`);
+
+      ws.onopen  = () => { if(badge) { badge.textContent='● WS'; badge.className='text-[10px] px-2.5 py-1 rounded-full border border-green/30 text-green font-mono'; } };
+      ws.onclose = () => { if(badge) { badge.textContent='○ WS'; badge.className='text-[10px] px-2.5 py-1 rounded-full border border-dim text-muted font-mono'; } setTimeout(connectWS, 3000); };
+      ws.onerror = () => ws.close();
+
+      (window as any).__aq_ws = ws;
+      ws.onmessage = ({ data }) => {
+        try {
+          const msg = JSON.parse(data);
+          (window as any).__aq_ws_listeners?.forEach((fn:any) => fn(msg));
+        } catch {}
+      };
+    })();
+  </script>
+</body>
+</html>

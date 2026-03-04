@@ -1,0 +1,24 @@
+---
+import '../styles/global.css';
+const { title = 'AxonQwen' } = Astro.props;
+---
+<!doctype html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <link rel="icon" type="image/png" href="/logo.png"/>
+  <title>{title} — AxonQwen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body class="bg-paper text-ink antialiased">
+  <slot/>
+  <script>
+    const obs = new IntersectionObserver(entries =>
+      entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in'); }),
+      { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  </script>
+</body>
+</html>

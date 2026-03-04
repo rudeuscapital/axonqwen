@@ -1,0 +1,120 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+import { monitors as monitorStore } from '../../lib/server';
+const mons = Array.from(monitorStore.values()).map(({id,url,condition,intervalMinutes,startedAt})=>({id,url,condition,intervalMinutes,startedAt}));
+---
+<AppLayout title="Monitor Agent" active="monitor">
+  <div class="max-w-4xl space-y-5">
+    <div>
+      <h2 class="font-display font-bold text-white text-2xl mb-1">Monitor Agent</h2>
+      <p class="text-muted text-sm">Schedule URL checks with AI-evaluated conditions. Alerts fire in real-time via WebSocket.</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div class="bg-wire border border-dim rounded-xl p-6 space-y-4">
+        <h3 class="font-display font-bold text-white text-sm">New Monitor</h3>
+        <div><label class="text-[10px] text-muted uppercase tracking-widest block mb-2">URL to Watch</label><input id="url" type="url" placeholder="https://example.com" class="field"/></div>
+        <div><label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Trigger Condition</label><textarea id="cond" rows="2" placeholder="e.g. 'price drops below $50'" class="field resize-none"></textarea></div>
+        <div>
+          <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Interval: <span id="int-val">30</span> min</label>
+          <input id="interval" type="range" min="5" max="120" step="5" value="30" class="w-full accent-accent" oninput="document.getElementById('int-val').textContent=this.value"/>
+        </div>
+        <button id="start-btn" class="btn-primary">⊕ Start Monitor</button>
+        <div id="mon-progress" class="hidden bg-wire border border-accent/20 rounded-lg p-3 mt-3">
+          <div id="mon-steps" class="flex items-center"></div>
+        </div>
+      </div>
+      <div class="space-y-4">
+        <div class="bg-wire border border-dim rounded-xl overflow-hidden">
+          <div class="px-5 py-4 border-b border-dim flex items-center justify-between">
+            <h3 class="font-display font-bold text-white text-sm">Active Monitors</h3>
+            <a href="/app/monitor" class="text-xs text-muted hover:text-accent font-mono">↻</a>
+          </div>
+          <div id="monitor-list" class="divide-y divide-dim/50 max-h-64 overflow-y-auto">
+            {mons.length===0&&<p class="px-5 py-6 text-center text-muted text-sm">No active monitors</p>}
+            {mons.map(m=>(
+              <div class="px-5 py-4 flex items-start justify-between gap-3" id={`mon-${m.id}`}>
+                <div class="min-w-0"><p class="text-white text-xs font-mono truncate">{m.url}</p><p class="text-muted text-[11px] mt-0.5">{m.condition||'Any change'} · every {m.intervalMinutes}min</p></div>
+                <button class="stop-btn text-muted hover:text-accent2 text-xs flex-shrink-0" data-id={m.id}>✕</button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div class="bg-wire border border-dim rounded-xl overflow-hidden">
+          <div class="px-5 py-4 border-b border-dim flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-gold animate-pulse-dot"></span><h3 class="font-display font-bold text-white text-sm">Live Alerts</h3></div>
+          <div id="alerts" class="p-4 font-mono text-xs space-y-1.5 max-h-48 overflow-y-auto"><p class="text-muted/40">Waiting…</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const startBtn=document.getElementById('start-btn')!;
+    const monProgress=document.getElementById('mon-progress')!;
+    const monSteps=document.getElementById('mon-steps')!;
+    const MSTEPS=['Sending','Registering','Active'];
+    function monSetStep(n:number){
+      let h='';
+      MSTEPS.forEach((s,i)=>{
+        const done=i<n,active=i===n,last=i===MSTEPS.length-1;
+        const dc=done?'bg-green border-green':active?'bg-accent border-accent animate-pulse':'bg-transparent border-dim';
+        const lc=done?'text-green':active?'text-accent':'text-muted/40';
+        h+=`<div class="flex flex-col items-center min-w-fit"><div class="w-2.5 h-2.5 rounded-full border-2 ${dc} transition-colors"></div><span class="text-[9px] ${lc} mt-1 font-mono">${done?'✓':s}</span></div>`;
+        if(!last){const lc=done?'step-line-done':active?'step-line-active':'step-line-dim';h+=`<div class="flex-1 ${lc} mx-1.5 -mt-3"></div>`;}
+      });
+      monSteps.innerHTML=h;
+    }
+    startBtn.onclick=async()=>{
+      const url=(document.getElementById('url') as HTMLInputElement).value.trim();
+      const cond=(document.getElementById('cond') as HTMLTextAreaElement).value.trim();
+      const interval=parseInt((document.getElementById('interval') as HTMLInputElement).value);
+      if(!url)return;
+      startBtn.textContent='⟳ Starting…';
+      startBtn.setAttribute('disabled','');
+      startBtn.classList.add('opacity-60');
+      monProgress.classList.remove('hidden');
+      monSetStep(0);
+      try{
+        monSetStep(1);
+        const r=await fetch('/api/monitor/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,condition:cond||undefined,intervalMinutes:interval})});
+        const d=await r.json();
+        if(d.error)throw new Error(d.error);
+        monSetStep(2);
+        if(d.monitorId) setTimeout(()=>location.reload(),800);
+      }catch(e:any){
+        monProgress.classList.add('hidden');
+        const alertsEl=document.getElementById('alerts')!;
+        if(alertsEl.firstElementChild?.textContent==='Waiting…') alertsEl.innerHTML='';
+        const p=document.createElement('p');p.className='text-accent2';
+        p.textContent=`Error: ${e.message}`;
+        alertsEl.prepend(p);
+      }finally{
+        startBtn.textContent='⊕ Start Monitor';
+        startBtn.removeAttribute('disabled');
+        startBtn.classList.remove('opacity-60');
+      }
+    };
+    document.querySelectorAll('.stop-btn').forEach(b=>b.addEventListener('click',async()=>{
+      const id=(b as HTMLElement).dataset.id!;
+      const btn=b as HTMLElement;
+      btn.textContent='⟳';
+      btn.classList.add('animate-spin','pointer-events-none');
+      try{
+        await fetch(`/api/monitor/${id}`,{method:'DELETE'});
+        const row=document.getElementById(`mon-${id}`);
+        if(row){row.style.opacity='0';row.style.transition='opacity .3s';setTimeout(()=>row.remove(),300);}
+      }catch{
+        btn.textContent='✕';
+        btn.classList.remove('animate-spin','pointer-events-none');
+      }
+    }));
+    (window as any).__aq_ws_listeners??=new Set();
+    (window as any).__aq_ws_listeners.add((msg:any)=>{
+      if(msg.type==='monitor_alert'){
+        const alertsEl=document.getElementById('alerts')!;
+        if(alertsEl.firstElementChild?.textContent==='Waiting…') alertsEl.innerHTML='';
+        const p=document.createElement('p'); p.className='text-gold';
+        p.textContent=`[${msg.time?.slice(11,19)}] ${msg.url}`;
+        alertsEl.prepend(p);
+      }
+    });
+  </script>
+</AppLayout>

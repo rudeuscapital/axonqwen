@@ -1,0 +1,30 @@
+{
+  "name": "axonqwen",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "AxonQwen — Enterprise AI Automation Platform (Astro SSR + React)",
+  "scripts": {
+    "dev":     "astro dev",
+    "build":   "astro build",
+    "preview": "astro preview",
+    "start":   "node dist/server/entry.mjs"
+  },
+  "dependencies": {
+    "@astrojs/node":     "^8.3.0",
+    "@astrojs/react":    "^3.6.0",
+    "@astrojs/tailwind": "^5.1.0",
+    "astro":             "^4.16.0",
+    "react":             "^18.3.1",
+    "react-dom":         "^18.3.1",
+    "tailwindcss":       "^3.4.0",
+    "playwright":        "^1.45.0",
+    "dotenv":            "^16.3.1",
+    "ws":                "^8.14.0"
+  },
+  "devDependencies": {
+    "@types/react":        "^18.3.0",
+    "@types/react-dom":    "^18.3.0",
+    "@types/ws":           "^8.5.0",
+    "typescript":          "^5.5.0"
+  }
+}

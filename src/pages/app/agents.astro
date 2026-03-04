@@ -1,0 +1,61 @@
+---
+// src/pages/app/agents.astro — SSR
+import AppLayout from '../../layouts/AppLayout.astro';
+import { tasks as taskStore } from '../../lib/server';
+
+const allTasks = Array.from(taskStore.values());
+
+const agentDefs = [
+  { id:'browser-rpa', name:'Browser RPA',    icon:'⬟', color:'accent',  href:'/app/browser', desc:'Playwright-powered browser automation with Qwen3.5 vision' },
+  { id:'scraper',     name:'Scraper',         icon:'◉', color:'green',   href:'/app/scraper', desc:'AI-powered structured data extraction from any URL' },
+  { id:'vision',      name:'Vision',          icon:'◑', color:'gold',    href:'/app/vision',  desc:'Image analysis, OCR, and document data extraction' },
+  { id:'monitor',     name:'Monitor',         icon:'⊕', color:'accent2', href:'/app/monitor', desc:'Scheduled URL monitoring with natural language conditions' },
+  { id:'chat',        name:'Chat (OpenClaw)', icon:'◈', color:'accent',  href:'/app/chat',    desc:'Streaming conversation with persistent memory via OpenClaw' },
+];
+
+const BORDER: Record<string,string> = {
+  accent: 'text-accent  border-accent/20  bg-accent/10',
+  green:  'text-green   border-green/20   bg-green/10',
+  gold:   'text-gold    border-gold/20    bg-gold/10',
+  accent2:'text-accent2 border-accent2/20 bg-accent2/10',
+};
+---
+<AppLayout title="Agents" active="agents">
+  <div class="space-y-6">
+    <div>
+      <h2 class="font-display font-bold text-white text-2xl mb-1">Agents</h2>
+      <p class="text-muted text-sm">Five purpose-built AI agents, all backed by your local Qwen3.5 model.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+      {agentDefs.map(agent => {
+        const agentTasks   = allTasks.filter(t => t.agent === agent.id);
+        const successCount = agentTasks.filter(t => t.status === 'success').length;
+        const rate = agentTasks.length > 0 ? Math.round(successCount / agentTasks.length * 100) : 0;
+        const c    = BORDER[agent.color];
+        return (
+          <div class="bg-wire border border-dim rounded-xl p-6 hover:border-dim/80 transition-all relative overflow-hidden group">
+            <div class="absolute inset-0 dark-grid-bg opacity-20 rounded-xl"></div>
+            <div class="relative z-10">
+              <div class="flex items-start justify-between mb-5">
+                <div class={`w-10 h-10 rounded-xl flex items-center justify-center text-xl border ${c}`}>{agent.icon}</div>
+                <div class="flex items-center gap-1.5 text-xs text-muted">
+                  <span class="w-1.5 h-1.5 rounded-full bg-green animate-pulse-dot"></span>
+                  Active
+                </div>
+              </div>
+              <h3 class="font-display font-bold text-white text-lg mb-2">{agent.name}</h3>
+              <p class="text-muted text-xs leading-relaxed mb-5">{agent.desc}</p>
+              <div class="flex items-center justify-between text-xs mb-4 text-muted">
+                <span>{agentTasks.length} tasks · {successCount} ok</span>
+                {agentTasks.length > 0 && <span class="text-green">{rate}% success</span>}
+              </div>
+              <a href={agent.href} class={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono border transition-all ${c} hover:opacity-80`}>
+                Open Agent →
+              </a>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</AppLayout>

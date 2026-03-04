@@ -1,0 +1,105 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ink:    #040811; --paper:  #f5f2eb; --paper2: #ede9df;
+  --wire:   #0e1120; --border: #d8d2c5; --muted:  #6b7490;
+  --dim:    #1a1f35; --accent: #00c8ff; --accent2:#ff4444;
+  --gold:   #e8c84a; --green:  #00e09a;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { font-family: 'JetBrains Mono', monospace; }
+
+/* Grid backgrounds */
+.grid-bg {
+  background-image: linear-gradient(var(--border) 1px,transparent 1px),
+                    linear-gradient(90deg,var(--border) 1px,transparent 1px);
+  background-size: 48px 48px;
+}
+.dark-grid-bg {
+  background-image: linear-gradient(rgba(0,200,255,.04) 1px,transparent 1px),
+                    linear-gradient(90deg,rgba(0,200,255,.04) 1px,transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Noise */
+.noise::after {
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:999;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.03'/%3E%3C/svg%3E");
+  opacity:.6;
+}
+
+/* Scroll reveal */
+.reveal { opacity:0; transform:translateY(28px); transition:opacity .65s ease, transform .65s ease; }
+.reveal.in { opacity:1; transform:translateY(0); }
+.delay-100 { transition-delay:.1s; }
+.delay-200 { transition-delay:.2s; }
+.delay-300 { transition-delay:.3s; }
+.delay-400 { transition-delay:.4s; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:5px; height:5px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:#1a1f35; border-radius:10px; }
+::-webkit-scrollbar-thumb:hover { background:#2a3050; }
+
+/* Dashboard components */
+.sidebar-link {
+  @apply flex items-center gap-3 px-4 py-3 rounded-lg text-muted text-sm font-mono transition-all cursor-pointer;
+}
+.sidebar-link:hover { @apply bg-dim text-white; }
+.sidebar-link.active { @apply bg-dim text-accent; }
+
+.stat-card { @apply bg-wire border border-dim rounded-xl p-6 relative overflow-hidden; }
+.task-row  { @apply flex items-center gap-4 px-5 py-4 border-b border-dim text-sm text-muted hover:bg-wire/50 transition-colors; }
+
+.badge         { @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono; }
+.badge-success { @apply bg-green/10  text-green   border border-green/20; }
+.badge-running { @apply bg-accent/10 text-accent  border border-accent/20; }
+.badge-failed  { @apply bg-accent2/10 text-accent2 border border-accent2/20; }
+.badge-pending { @apply bg-gold/10   text-gold    border border-gold/20; }
+
+.code-block     { @apply bg-black/60 border border-dim rounded-lg overflow-hidden text-sm; }
+.code-block pre { @apply p-4 text-[13px] leading-relaxed overflow-x-auto text-[#9ab0c8] font-mono; }
+
+.chat-msg-user { @apply bg-accent/10 border border-accent/20 rounded-2xl rounded-tr-sm px-4 py-3 text-sm text-white max-w-[75%] ml-auto; }
+.chat-msg-ai   { @apply bg-wire border border-dim rounded-2xl rounded-tl-sm px-4 py-3 text-sm text-[#c0cce0] max-w-[85%]; }
+
+.field {
+  @apply w-full bg-wire border border-dim rounded-lg px-4 py-2.5 text-sm text-white font-mono
+         placeholder-muted focus:outline-none focus:border-accent/50 transition-colors;
+}
+.btn-primary   { @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-accent    text-black  text-sm font-mono font-bold  transition-all hover:bg-[#00a8d8]  active:scale-95; }
+.btn-secondary { @apply inline-flex items-center gap-2 px-5 py-2.5 rounded-lg border border-dim text-muted  text-sm font-mono         transition-all hover:border-white/30 hover:text-white  active:scale-95; }
+.btn-danger    { @apply inline-flex items-center gap-2 px-4 py-2   rounded-lg bg-accent2/10 border border-accent2/20 text-accent2 text-sm font-mono transition-all hover:bg-accent2/20 active:scale-95; }
+
+.log-info  { @apply text-[#9ab0c8]; }
+.log-ok    { @apply text-green; }
+.log-warn  { @apply text-gold; }
+.log-error { @apply text-accent2; }
+
+/* Progress stepper animated lines */
+@keyframes step-flow {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.step-line-active {
+  height: 2px;
+  background: linear-gradient(90deg, var(--dim) 0%, var(--accent) 40%, var(--accent) 60%, var(--dim) 100%);
+  background-size: 200% 100%;
+  animation: step-flow 1.5s ease-in-out infinite;
+}
+.step-line-done {
+  height: 2px;
+  background: linear-gradient(90deg, var(--green) 0%, rgba(0,224,154,.4) 50%, var(--green) 100%);
+  background-size: 200% 100%;
+  animation: step-flow 2s ease-in-out infinite;
+}
+.step-line-dim {
+  height: 1px;
+  background: var(--dim);
+}

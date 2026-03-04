@@ -1,0 +1,280 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+---
+<AppLayout title="Chat Agent" active="chat">
+  <div class="flex h-full gap-0" id="chat-app">
+    <!-- Messages area -->
+    <div class="flex-1 flex flex-col h-full min-w-0">
+      <div id="messages" class="flex-1 overflow-y-auto p-6 space-y-4">
+        <div class="flex flex-col items-center justify-center h-full gap-6 text-center" id="empty-state">
+          <div class="text-6xl text-muted/30">◈</div>
+          <div>
+            <h3 class="font-display font-bold text-white text-xl mb-2">AxonQwen Chat</h3>
+            <p class="text-muted text-sm max-w-sm">Qwen3.5 running locally via Ollama. Ask anything about automation.</p>
+          </div>
+          <div class="grid grid-cols-1 gap-2 w-full max-w-md" id="quick-actions">
+            <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">List steps to scrape a product listing page</button>
+            <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">Generate a Playwright script to fill a login form</button>
+            <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">Extract all tables from a URL as JSON</button>
+            <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">Write an automation to monitor a price change</button>
+          </div>
+        </div>
+      </div>
+      <!-- Progress -->
+      <div id="chat-progress" class="hidden border-t border-accent/20 px-4 py-2">
+        <div id="chat-steps" class="flex items-center"></div>
+      </div>
+      <!-- Input -->
+      <div class="border-t border-dim p-4 flex-shrink-0">
+        <div class="flex gap-3">
+          <textarea id="chat-input" rows="2" placeholder="Message AxonQwen… (Enter to send, Shift+Enter for newline)"
+            class="field flex-1 resize-none leading-relaxed"></textarea>
+          <button id="send-btn" class="btn-primary px-6 self-end">↑</button>
+        </div>
+        <button id="clear-btn" class="mt-2 text-[11px] text-muted hover:text-accent2 transition-colors font-mono hidden">✕ Clear</button>
+      </div>
+    </div>
+    <!-- Settings sidebar -->
+    <div class="w-60 flex-shrink-0 border-l border-dim p-5 space-y-5 overflow-y-auto hidden xl:block bg-[#02040a]">
+      <h3 class="font-display font-bold text-white text-sm">Settings</h3>
+      <div>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Model</label>
+        <select id="model-sel" class="field text-xs">
+          {['qwen3.5','qwen3.5:7b','qwen3.5:14b','qwen3.5:27b','qwen3.5:35b'].map(m => (
+            <option value={m}>{m}</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Temperature: <span id="temp-val">0.6</span></label>
+        <input id="temp-range" type="range" min="0" max="2" step="0.1" value="0.6" class="w-full accent-accent"/>
+      </div>
+      <div>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">System Prompt</label>
+        <textarea id="sys-prompt" rows="4" placeholder="Optional…" class="field text-xs resize-none"></textarea>
+      </div>
+      <div class="pt-2 border-t border-dim space-y-2 text-[11px]">
+        <div class="flex justify-between"><span class="text-muted">Messages</span><span id="msg-count" class="text-white">0</span></div>
+        <div class="flex justify-between"><span class="text-muted">Status</span><span id="stream-status" class="text-green-400">Ready</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const messagesEl   = document.getElementById('messages')!;
+    const inputEl      = document.getElementById('chat-input') as HTMLTextAreaElement;
+    const sendBtn      = document.getElementById('send-btn')!;
+    const clearBtn     = document.getElementById('clear-btn')!;
+    const emptyState   = document.getElementById('empty-state')!;
+    const modelSel     = document.getElementById('model-sel') as HTMLSelectElement;
+    const tempRange    = document.getElementById('temp-range') as HTMLInputElement;
+    const tempVal      = document.getElementById('temp-val')!;
+    const sysPmt       = document.getElementById('sys-prompt') as HTMLTextAreaElement;
+    const msgCount     = document.getElementById('msg-count')!;
+    const streamStatus = document.getElementById('stream-status')!;
+    const chatProgress = document.getElementById('chat-progress')!;
+    const chatSteps    = document.getElementById('chat-steps')!;
+
+    const CSTEPS = ['Connecting', 'Thinking', 'Generating', 'Done'];
+    function chatSetStep(n: number) {
+      let h = '';
+      CSTEPS.forEach((s, i) => {
+        const done = i < n, active = i === n, last = i === CSTEPS.length - 1;
+        const dc = done ? 'bg-green border-green' : active ? 'bg-accent border-accent animate-pulse' : 'bg-transparent border-dim';
+        const lc = done ? 'text-green' : active ? 'text-accent' : 'text-muted/40';
+        h += `<div class="flex flex-col items-center min-w-fit"><div class="w-2 h-2 rounded-full border-2 ${dc} transition-colors"></div><span class="text-[8px] ${lc} mt-0.5 font-mono">${done ? '✓' : s}</span></div>`;
+        if (!last) { const lc2 = done ? 'step-line-done' : active ? 'step-line-active' : 'step-line-dim'; h += `<div class="flex-1 ${lc2} mx-1 -mt-2.5"></div>`; }
+      });
+      chatSteps.innerHTML = h;
+    }
+
+    // Load settings from localStorage
+    function loadSettings() {
+      const DEFAULTS = { ollamaUrl:'http://localhost:11434', model:'qwen3.5', temperature:0.6, maxTokens:4096, numCtx:32768, systemPrompt:'' };
+      try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem('axonqwen-settings')||'{}') }; } catch { return DEFAULTS; }
+    }
+    const settings = loadSettings();
+    modelSel.value = settings.model;
+    tempRange.value = String(settings.temperature);
+    tempVal.textContent = String(settings.temperature);
+    if (settings.systemPrompt) sysPmt.value = settings.systemPrompt;
+
+    tempRange.oninput = () => tempVal.textContent = tempRange.value;
+
+    let history: {role:string;content:string}[] = [];
+    let streaming = false;
+
+    function md(text: string) {
+      return text
+        .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="bg-black/40 rounded p-3 my-2 text-[12px] overflow-x-auto text-[#9ab0c8] leading-relaxed">$2</pre>')
+        .replace(/`([^`]+)`/g, '<code class="bg-black/40 px-1.5 py-0.5 rounded text-accent text-[12px]">$1</code>')
+        .replace(/\*\*(.+?)\*\*/g, '<strong class="text-white">$1</strong>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function renderBubble(thinking: string, content: string) {
+      let html = '';
+      if (thinking) {
+        html += `<details class="mb-2 group" ${!content ? 'open' : ''}>
+          <summary class="text-[11px] text-muted cursor-pointer select-none hover:text-accent transition-colors">
+            <span class="text-accent/60">◈</span> Thinking${!content ? '<span class="animate-pulse ml-1">…</span>' : ''}
+          </summary>
+          <div class="mt-1.5 pl-3 border-l border-dim text-xs text-muted/80 leading-relaxed">${md(thinking)}</div>
+        </details>`;
+      }
+      if (content) {
+        html += md(content);
+      } else if (!thinking) {
+        html += '<span class="opacity-40 animate-pulse">▋</span>';
+      }
+      return html;
+    }
+
+    function appendMsg(role: string, content: string): HTMLElement {
+      if (emptyState.parentNode) emptyState.remove();
+      clearBtn.classList.remove('hidden');
+      const div = document.createElement('div');
+      div.className = `flex ${role === 'user' ? 'justify-end' : 'justify-start gap-2'}`;
+      if (role === 'assistant') {
+        div.innerHTML = `<div class="w-7 h-7 rounded-lg bg-accent/20 border border-accent/30 flex items-center justify-center text-accent text-[10px] font-bold mt-1 flex-shrink-0">AQ</div><div class="chat-msg-ai"></div>`;
+      } else {
+        div.innerHTML = `<div class="chat-msg-user">${md(content)}</div>`;
+      }
+      messagesEl.appendChild(div);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+      return role === 'assistant' ? div.querySelector('.chat-msg-ai')! : div.querySelector('.chat-msg-user')!;
+    }
+
+    async function send(text?: string) {
+      const content = (text ?? inputEl.value).trim();
+      if (!content || streaming) return;
+      inputEl.value = '';
+      history.push({ role:'user', content });
+      appendMsg('user', content);
+      msgCount.textContent = String(history.length);
+
+      streaming = true;
+      streamStatus.textContent = 'Streaming…';
+      streamStatus.className = 'text-accent animate-pulse';
+      sendBtn.textContent = '⟳';
+      chatProgress.classList.remove('hidden');
+      chatSetStep(0);
+
+      const bubble = appendMsg('assistant', '');
+      bubble.innerHTML = '<span class="opacity-40 animate-pulse">▋</span>';
+      let accumulated = '';
+      let thinkingText = '';
+
+      try {
+        const s = loadSettings();
+        const ollamaUrl = s.ollamaUrl || 'http://localhost:11434';
+        const model = modelSel.value || s.model || 'qwen3.5';
+        const sysContent = sysPmt.value || s.systemPrompt || 'You are AxonQwen, an enterprise-grade AI automation agent powered by Qwen3.5. Be precise and professional.';
+
+        // Pre-check: is Ollama reachable?
+        try {
+          const ping = await fetch(`${ollamaUrl}/api/tags`, { signal: AbortSignal.timeout(5000) });
+          if (!ping.ok) throw new Error('not ok');
+        } catch {
+          throw new Error(`Tidak dapat terhubung ke Ollama di ${ollamaUrl}. Pastikan Ollama sudah berjalan.`);
+        }
+        chatSetStep(1);
+
+        const res = await fetch(`${ollamaUrl}/api/chat`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            model,
+            stream: true,
+            options: {
+              temperature: parseFloat(tempRange.value),
+              num_predict: s.maxTokens || 4096,
+              num_ctx: s.numCtx || 32768,
+            },
+            messages: [
+              { role:'system', content: sysContent },
+              ...history,
+            ],
+          }),
+        });
+        if (!res.ok) {
+          let errMsg = `HTTP ${res.status}`;
+          try { const b = await res.json(); errMsg = b.error || errMsg; } catch {}
+          if (res.status === 404) errMsg = `Model "${model}" tidak ditemukan. Jalankan: ollama pull ${model}`;
+          throw new Error(errMsg);
+        }
+        if (!res.body) throw new Error('No response body from Ollama');
+        const reader  = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '';
+        while (true) {
+          const {done,value} = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, {stream:true});
+          const lines = buf.split('\n'); buf = lines.pop() ?? '';
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const obj = JSON.parse(line);
+              if (obj?.error) throw new Error(obj.error);
+              const tok = obj?.message?.content || '';
+              const think = obj?.message?.thinking || '';
+              if (think) { if (!thinkingText) chatSetStep(1); thinkingText += think; }
+              if (tok) { if (!accumulated) chatSetStep(2); accumulated += tok; }
+              if (think || tok) {
+                bubble.innerHTML = renderBubble(thinkingText, accumulated);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+              }
+              if (obj?.done) break;
+            } catch(parseErr: any) {
+              if (parseErr.message && !parseErr.message.includes('JSON')) throw parseErr;
+            }
+          }
+        }
+        if (!accumulated && !thinkingText) {
+          bubble.innerHTML = '<span class="text-muted italic">Model tidak memberikan respons.</span>';
+        } else {
+          // Final render with thinking collapsed
+          bubble.innerHTML = renderBubble(thinkingText, accumulated || '(thinking only — no final answer)');
+        }
+        history.push({ role:'assistant', content: accumulated || thinkingText || '(no response)' });
+        msgCount.textContent = String(history.length);
+      } catch(e: any) {
+        const errText = e?.message || 'Unknown error';
+        const isConnection = /failed to fetch|networkerror|abort|tidak dapat terhubung/i.test(errText);
+        bubble.innerHTML = `<div class="space-y-2">
+          <p style="color:#ff4444;font-weight:600;">Error: ${errText.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
+          ${isConnection ? `<p class="text-muted text-xs">Pastikan Ollama berjalan di komputer Anda. Cek dengan perintah: <code class="bg-black/40 px-1.5 py-0.5 rounded text-[11px]">ollama serve</code></p>
+          <a href="/app/settings" class="inline-block text-xs text-accent hover:underline">Buka Settings →</a>` : ''}
+        </div>`;
+        // Remove failed message from history so user can retry
+        if (history.length && history[history.length-1].role === 'user') {
+          history.pop();
+          msgCount.textContent = String(history.length);
+        }
+      }
+
+      streaming = false;
+      chatSetStep(3);
+      setTimeout(() => chatProgress.classList.add('hidden'), 1000);
+      streamStatus.textContent = 'Ready';
+      streamStatus.className   = 'text-green-400';
+      sendBtn.textContent = '↑';
+    }
+
+    sendBtn.onclick = () => send();
+    inputEl.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+    });
+    clearBtn.onclick = () => {
+      history = []; streaming = false;
+      messagesEl.innerHTML = '';
+      messagesEl.appendChild(emptyState);
+      clearBtn.classList.add('hidden');
+      msgCount.textContent = '0';
+    };
+    document.querySelectorAll('.qa').forEach(btn => {
+      btn.addEventListener('click', () => send((btn as HTMLElement).textContent ?? ''));
+    });
+  </script>
+</AppLayout>

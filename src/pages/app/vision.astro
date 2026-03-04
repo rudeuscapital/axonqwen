@@ -1,0 +1,174 @@
+---
+import AppLayout from '../../layouts/AppLayout.astro';
+---
+<AppLayout title="Vision Agent" active="vision">
+  <div class="max-w-5xl space-y-5">
+    <div>
+      <h2 class="font-display font-bold text-white text-2xl mb-1">Vision Agent</h2>
+      <p class="text-muted text-sm">Upload any image — invoice, contract, screenshot, form. Qwen3.5 extracts all text, tables, and structured data.</p>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="space-y-4">
+        <div id="dropzone" class="border-2 border-dashed border-dim hover:border-accent/40 rounded-xl p-8 text-center cursor-pointer transition-colors min-h-[200px] flex flex-col items-center justify-center">
+          <div id="drop-hint" class="flex flex-col items-center gap-3">
+            <span class="text-4xl text-muted/40">◑</span>
+            <p class="text-muted text-sm">Drop image here or click to upload</p>
+            <p class="text-muted/40 text-xs">JPEG, PNG, WebP</p>
+          </div>
+          <img id="preview" class="hidden max-h-48 rounded-lg object-contain"/>
+        </div>
+        <input id="file-input" type="file" accept="image/*" class="hidden"/>
+        <div>
+          <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Instruction (optional)</label>
+          <textarea id="instr" rows="3" placeholder="What to extract? e.g. 'Get all invoice line items as JSON'" class="field resize-none"></textarea>
+        </div>
+        <button id="analyze-btn" class="btn-primary w-full justify-center" disabled>◑ Analyse Image</button>
+        <div id="vision-progress" class="hidden bg-wire border border-accent/20 rounded-xl p-4 space-y-2.5">
+          <div id="v-steps-row" class="flex items-center"></div>
+          <p class="text-accent text-xs font-mono flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+            <span id="v-status-txt">Processing…</span>
+          </p>
+        </div>
+      </div>
+      <div class="bg-wire border border-dim rounded-xl flex flex-col overflow-hidden">
+        <div class="px-5 py-4 border-b border-dim flex items-center justify-between">
+          <h3 class="font-display font-bold text-white text-sm">Extracted Data</h3>
+          <button id="copy-btn" class="text-xs text-muted hover:text-accent font-mono hidden">Copy</button>
+        </div>
+        <div id="result-area" class="flex-1 p-5 overflow-y-auto max-h-[460px]">
+          <div class="flex flex-col items-center justify-center h-full gap-3 text-center">
+            <span class="text-4xl text-muted/20">◑</span>
+            <p class="text-muted/40 text-sm">Upload an image to begin</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const dropzone  = document.getElementById('dropzone')!;
+    const fileInput = document.getElementById('file-input') as HTMLInputElement;
+    const preview   = document.getElementById('preview') as HTMLImageElement;
+    const dropHint  = document.getElementById('drop-hint')!;
+    const vProgress = document.getElementById('vision-progress')!;
+    const vStepsRow = document.getElementById('v-steps-row')!;
+    const vStatusTxt= document.getElementById('v-status-txt')!;
+
+    const VSTEPS=['Upload','Processing','AI Analysis','Done'];
+    function vSetStep(n:number,msg:string){
+      vStatusTxt.textContent=msg;
+      let h='';
+      VSTEPS.forEach((s,i)=>{
+        const done=i<n,active=i===n,last=i===VSTEPS.length-1;
+        const dc=done?'bg-green border-green':active?'bg-accent border-accent animate-pulse':'bg-transparent border-dim';
+        const lc=done?'text-green':active?'text-accent':'text-muted/40';
+        h+=`<div class="flex flex-col items-center min-w-fit"><div class="w-2.5 h-2.5 rounded-full border-2 ${dc} transition-colors"></div><span class="text-[9px] ${lc} mt-1 font-mono transition-colors">${done?'✓':s}</span></div>`;
+        if(!last){const lc=done?'step-line-done':active?'step-line-active':'step-line-dim';h+=`<div class="flex-1 ${lc} mx-1.5 -mt-3 transition-all"></div>`;}
+      });
+      vStepsRow.innerHTML=h;
+    }
+    const instrEl   = document.getElementById('instr') as HTMLTextAreaElement;
+    const analyzeBtn= document.getElementById('analyze-btn') as HTMLButtonElement;
+    const resultArea= document.getElementById('result-area')!;
+    const copyBtn   = document.getElementById('copy-btn')!;
+    let imgB64: string|null = null;
+
+    async function handleFile(file: File) {
+      const url = URL.createObjectURL(file);
+      preview.src = url; preview.classList.remove('hidden'); dropHint.classList.add('hidden');
+      imgB64 = await new Promise<string>((res,rej)=>{
+        const r=new FileReader(); r.onload=()=>res((r.result as string).split(',')[1]!); r.onerror=()=>rej(); r.readAsDataURL(file);
+      });
+      analyzeBtn.removeAttribute('disabled');
+    }
+    dropzone.onclick = () => fileInput.click();
+    fileInput.onchange = e => { const f=(e.target as HTMLInputElement).files?.[0]; if(f) handleFile(f); };
+    dropzone.ondragover = e => e.preventDefault();
+    dropzone.ondrop = e => { e.preventDefault(); const f=e.dataTransfer?.files[0]; if(f) handleFile(f); };
+    copyBtn.onclick = () => navigator.clipboard.writeText(resultArea.innerText);
+
+    function mdv(t: string) {
+      return t.replace(/```[\s\S]*?```/g,(m:string)=>`<pre class="bg-black/40 rounded p-3 my-2 overflow-x-auto text-[12px]">${m.replace(/```\w*\n?/g,'').trim()}</pre>`).replace(/\*\*(.+?)\*\*/g,'<strong class="text-white">$1</strong>').replace(/\n/g,'<br/>');
+    }
+
+    analyzeBtn.onclick = async () => {
+      if (!imgB64) return;
+      vProgress.classList.remove('hidden');
+      vSetStep(0, 'Preparing image…');
+      resultArea.innerHTML = '<div class="flex items-center gap-3 text-accent text-sm"><span class="animate-spin">⟳</span> Analysing via local Ollama…</div>';
+      analyzeBtn.textContent = '⟳ Analysing…';
+      analyzeBtn.setAttribute('disabled','');
+      analyzeBtn.classList.add('opacity-60');
+      copyBtn.classList.add('hidden');
+      vSetStep(1, 'Sending image to Ollama…');
+      try {
+        let settings: any = {};
+        try { settings = JSON.parse(localStorage.getItem('axonqwen-settings') || '{}'); } catch {}
+        const ollamaUrl = settings.ollamaUrl || 'http://localhost:11434';
+        const r = await fetch(`${ollamaUrl}/api/chat`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: settings.model || 'qwen3.5',
+            stream: true,
+            options: { temperature: 0.4, num_predict: 4096, num_ctx: settings.numCtx || 32768 },
+            messages: [
+              { role: 'system', content: 'You are AxonQwen Vision Agent. Thoroughly analyse images and extract ALL information: all text content, tables (preserve rows and columns), form fields and their values, labels, numbers, dates, totals, and any other structured data. Format your output in clear, readable markdown.' },
+              { role: 'user', content: instrEl.value || 'Analyse this image and extract all text, tables, and structured data.', images: [imgB64] },
+            ],
+          }),
+        });
+        if (!r.ok) throw new Error(`Ollama error: ${r.status}. Pastikan Ollama berjalan.`);
+        if (!r.body) throw new Error('No response body');
+
+        const reader = r.body.getReader();
+        const decoder = new TextDecoder();
+        let buf = '', accumulated = '', thinkingText = '';
+        vSetStep(2, 'AI analyzing image…');
+        resultArea.innerHTML = '<span class="opacity-40 animate-pulse">▋</span>';
+        while (true) {
+          const {done,value} = await reader.read();
+          if (done) break;
+          buf += decoder.decode(value, {stream:true});
+          const lines = buf.split('\n'); buf = lines.pop() ?? '';
+          for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+              const obj = JSON.parse(line);
+              if (obj?.error) throw new Error(obj.error);
+              const tok = obj?.message?.content || '';
+              const think = obj?.message?.thinking || '';
+              if (think) thinkingText += think;
+              if (tok) accumulated += tok;
+              if (think || tok) {
+                let html = '';
+                if (thinkingText) {
+                  html += `<details class="mb-3" ${!accumulated ? 'open' : ''}>
+                    <summary class="text-[11px] text-muted cursor-pointer select-none hover:text-accent"><span class="text-accent/60">◈</span> Thinking${!accumulated ? '<span class="animate-pulse ml-1">…</span>' : ''}</summary>
+                    <div class="mt-1.5 pl-3 border-l border-dim text-xs text-muted/80">${mdv(thinkingText)}</div>
+                  </details>`;
+                }
+                html += accumulated ? mdv(accumulated) : '';
+                resultArea.innerHTML = html || '<span class="opacity-40 animate-pulse">▋</span>';
+                resultArea.scrollTop = resultArea.scrollHeight;
+              }
+              if (obj?.done) break;
+            } catch(pe:any) { if (pe.message && !pe.message.includes('JSON')) throw pe; }
+          }
+        }
+        if (!accumulated && !thinkingText) {
+          resultArea.innerHTML = '<span class="text-muted italic">Model tidak memberikan respons.</span>';
+        }
+        vSetStep(3, 'Complete!');
+        setTimeout(()=>vProgress.classList.add('hidden'),1500);
+        copyBtn.classList.remove('hidden');
+      } catch(e:any) {
+        resultArea.innerHTML = `<div class="space-y-2"><p style="color:#ff4444;font-weight:600;">Error: ${e.message}</p><p class="text-muted text-xs">Pastikan Ollama berjalan di komputer Anda.</p></div>`;
+        vProgress.classList.add('hidden');
+      }
+      analyzeBtn.textContent = '◑ Analyse Image';
+      analyzeBtn.removeAttribute('disabled');
+      analyzeBtn.classList.remove('opacity-60');
+    };
+  </script>
+</AppLayout>
