@@ -8,7 +8,11 @@
       "Bash(npx astro build)",
       "Bash(timeout 5 npx tsx server/index.ts)",
       "Bash(netstat -ano)",
-      "Bash(npx tsc --noEmit --project tsconfig.json)"
+      "Bash(npx tsc --noEmit --project tsconfig.json)",
+      "Bash(node -e \"import jwt from ''jsonwebtoken''; console.log\\(''jwt ok'', typeof jwt.sign\\);\")",
+      "Bash(node -e \"import tweetnacl from ''tweetnacl''; console.log\\(''nacl ok'', typeof tweetnacl\\);\")",
+      "Bash(node -e \"import bs58 from ''bs58''; console.log\\(''bs58 ok'', typeof bs58.decode\\);\")",
+      "Bash(node -e \"import {ethers} from ''ethers''; console.log\\(''ethers ok'', typeof ethers.verifyMessage\\);\")"
     ]
   }
 }
