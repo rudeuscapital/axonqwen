@@ -40,29 +40,49 @@ const steps = [
   <div class="cursor-ring fixed w-8 h-8 rounded-full border border-ink pointer-events-none z-[9998] hidden md:block" id="cr"></div>
 
   <!-- NAV -->
-  <nav class="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 sm:px-8 md:px-12 py-3 md:py-4 bg-paper/90 backdrop-blur-xl border-b border-border">
-    <a href="/" class="flex items-center gap-2 font-display font-extrabold text-base md:text-lg tracking-tight flex-shrink-0">
-      <img src="/logo.png" alt="AxonQwen" class="w-7 h-7 md:w-8 md:h-8 object-contain"/>
-      Axon<span class="text-accent">Qwen</span>
-    </a>
-    <div class="hidden lg:flex items-center gap-8">
-      {[['features','#features'],['agents','#agents'],['usage','#usage'],['docs','#docs'],['roadmap','#roadmap']].map(([l,h])=>(
-        <a href={h} class="text-xs text-muted uppercase tracking-widest hover:text-ink transition-colors">{l}</a>
-      ))}
+  <nav class="fixed top-0 inset-x-0 z-50 bg-paper/90 backdrop-blur-xl border-b border-border">
+    <div class="flex items-center justify-between px-4 sm:px-8 md:px-12 py-3 md:py-4">
+      <a href="/" class="flex items-center gap-2 font-display font-extrabold text-base md:text-lg tracking-tight flex-shrink-0">
+        <img src="/logo.png" alt="AxonQwen" class="w-7 h-7 md:w-8 md:h-8 object-contain"/>
+        Axon<span class="text-accent">Qwen</span>
+      </a>
+      <div class="hidden lg:flex items-center gap-8">
+        {[['features','#features'],['agents','#agents'],['usage','#usage'],['docs','#docs'],['roadmap','#roadmap']].map(([l,h])=>(
+          <a href={h} class="text-xs text-muted uppercase tracking-widest hover:text-ink transition-colors">{l}</a>
+        ))}
+      </div>
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <!-- Token badge -->
+        <span class="hidden md:flex text-[10px] px-3 py-1 rounded-full border font-mono items-center gap-2 border-accent/30 text-accent bg-accent/5">
+          <span class="font-bold">$AXQWEN</span>
+        </span>
+        <!-- Buy button -->
+        <a href="#token" class="hidden md:inline-block text-[10px] px-3 py-1.5 rounded-md bg-green/10 text-green border border-green/30 hover:bg-green/20 transition-all font-mono font-bold">Buy $AXQWEN</a>
+        <!-- Ollama badge (checked client-side) -->
+        <span id="ollama-badge" class="text-[10px] px-3 py-1 rounded-full border font-mono items-center gap-2 border-dim text-muted bg-dim/5 hidden lg:flex">
+          <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span>
+          <span id="ollama-badge-text">Checking…</span>
+        </span>
+        <a href="/login" class="hidden sm:inline-block text-[10px] sm:text-xs px-3 sm:px-4 py-1.5 sm:py-2 rounded-md bg-ink text-paper hover:bg-accent hover:text-black transition-all font-mono font-bold whitespace-nowrap">Connect Wallet →</a>
+        <!-- Mobile menu button -->
+        <button id="mobile-menu-btn" class="lg:hidden ml-1 p-2 text-muted hover:text-ink transition-colors" aria-label="Menu">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+            <line x1="3" y1="5" x2="17" y2="5"/><line x1="3" y1="10" x2="17" y2="10"/><line x1="3" y1="15" x2="17" y2="15"/>
+          </svg>
+        </button>
+      </div>
     </div>
-    <div class="flex items-center gap-1.5 sm:gap-2">
-      <!-- Token badge -->
-      <span class="hidden sm:flex text-[10px] px-3 py-1 rounded-full border font-mono items-center gap-2 border-accent/30 text-accent bg-accent/5">
-        <span class="font-bold">$AXQWEN</span>
-      </span>
-      <!-- Buy button -->
-      <a href="#token" class="hidden sm:inline-block text-[10px] px-3 py-1.5 rounded-md bg-green/10 text-green border border-green/30 hover:bg-green/20 transition-all font-mono font-bold">Buy $AXQWEN</a>
-      <!-- Ollama badge (checked client-side) -->
-      <span id="ollama-badge" class="text-[10px] px-3 py-1 rounded-full border font-mono items-center gap-2 border-dim text-muted bg-dim/5 hidden lg:flex">
-        <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span>
-        <span id="ollama-badge-text">Checking…</span>
-      </span>
-      <a href="/login" class="text-[10px] sm:text-xs px-3 sm:px-4 py-1.5 sm:py-2 rounded-md bg-ink text-paper hover:bg-accent hover:text-black transition-all font-mono font-bold whitespace-nowrap">Connect Wallet →</a>
+    <!-- Mobile menu dropdown -->
+    <div id="mobile-menu" class="hidden lg:hidden border-t border-border bg-paper/95 backdrop-blur-xl px-4 sm:px-8 py-4">
+      <div class="flex flex-col gap-3">
+        {[['Features','#features'],['Agents','#agents'],['Usage','#usage'],['Docs','#docs'],['Roadmap','#roadmap'],['$AXQWEN','#token']].map(([l,h])=>(
+          <a href={h} class="text-xs text-muted uppercase tracking-widest hover:text-ink transition-colors py-1">{l}</a>
+        ))}
+        <div class="flex items-center gap-2 pt-2 border-t border-border">
+          <a href="#token" class="text-[10px] px-3 py-1.5 rounded-md bg-green/10 text-green border border-green/30 hover:bg-green/20 transition-all font-mono font-bold">Buy $AXQWEN</a>
+          <a href="/login" class="text-[10px] px-3 py-1.5 rounded-md bg-ink text-paper hover:bg-accent hover:text-black transition-all font-mono font-bold">Connect Wallet →</a>
+        </div>
+      </div>
     </div>
   </nav>
 
@@ -694,6 +714,17 @@ ws.onmessage = ({ data }) => {
   </footer>
 
   <script>
+    // Mobile menu toggle
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    menuBtn?.addEventListener('click', () => {
+      mobileMenu?.classList.toggle('hidden');
+    });
+    // Close mobile menu when a link is clicked
+    mobileMenu?.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => mobileMenu?.classList.add('hidden'));
+    });
+
     // Custom cursor
     const c=document.getElementById('c')!,cr=document.getElementById('cr')!;
     let mx=0,my=0,rx=0,ry=0;
