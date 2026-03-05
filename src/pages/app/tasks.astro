@@ -2,29 +2,29 @@
 // src/pages/app/tasks.astro — CSR
 import AppLayout from '../../layouts/AppLayout.astro';
 ---
-<AppLayout title="Tugas" active="tasks">
+<AppLayout title="Tasks" active="tasks">
   <div class="space-y-4 h-full flex flex-col">
     <div class="flex items-center justify-between flex-shrink-0">
-      <h2 class="font-display font-bold text-white text-2xl">Tugas</h2>
-      <button id="refresh-btn" class="text-xs text-muted hover:text-accent transition-colors font-mono">↻ Muat Ulang</button>
+      <h2 class="font-display font-bold text-white text-2xl">Tasks</h2>
+      <button id="refresh-btn" class="text-xs text-muted hover:text-accent transition-colors font-mono">↻ Refresh</button>
     </div>
 
     <!-- Filter tabs -->
     <div class="flex gap-1 bg-wire border border-dim rounded-lg p-1 w-fit flex-shrink-0" id="filter-tabs">
-      <a href="/app/tasks?status=all" data-status="all" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">semua <span class="opacity-50 ml-1" data-count="all">—</span></a>
-      <a href="/app/tasks?status=success" data-status="success" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">berhasil <span class="opacity-50 ml-1" data-count="success">—</span></a>
-      <a href="/app/tasks?status=running" data-status="running" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">berjalan <span class="opacity-50 ml-1" data-count="running">—</span></a>
-      <a href="/app/tasks?status=failed" data-status="failed" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">gagal <span class="opacity-50 ml-1" data-count="failed">—</span></a>
-      <a href="/app/tasks?status=pending" data-status="pending" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">menunggu <span class="opacity-50 ml-1" data-count="pending">—</span></a>
+      <a href="/app/tasks?status=all" data-status="all" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">all <span class="opacity-50 ml-1" data-count="all">—</span></a>
+      <a href="/app/tasks?status=success" data-status="success" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">success <span class="opacity-50 ml-1" data-count="success">—</span></a>
+      <a href="/app/tasks?status=running" data-status="running" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">running <span class="opacity-50 ml-1" data-count="running">—</span></a>
+      <a href="/app/tasks?status=failed" data-status="failed" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">failed <span class="opacity-50 ml-1" data-count="failed">—</span></a>
+      <a href="/app/tasks?status=pending" data-status="pending" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">pending <span class="opacity-50 ml-1" data-count="pending">—</span></a>
     </div>
 
     <!-- Table -->
     <div class="bg-wire border border-dim rounded-xl overflow-hidden flex-1 overflow-y-auto">
       <div class="grid grid-cols-[80px_1fr_110px_90px_100px_44px] px-5 py-3 border-b border-dim text-[10px] uppercase tracking-widest text-muted sticky top-0 bg-wire z-10">
-        <span>ID</span><span>Deskripsi</span><span>Agen</span><span>Durasi</span><span>Status</span><span></span>
+        <span>ID</span><span>Description</span><span>Agent</span><span>Duration</span><span>Status</span><span></span>
       </div>
       <div id="task-table-body">
-        <div class="px-5 py-10 text-center text-muted text-sm">Memuat tugas…</div>
+        <div class="px-5 py-10 text-center text-muted text-sm">Loading tasks…</div>
       </div>
     </div>
   </div>
@@ -37,7 +37,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
     };
 
     const STATUS_LABEL: Record<string,string> = {
-      success:'berhasil', running:'berjalan', failed:'gagal', pending:'menunggu', awaiting_ai:'berjalan',
+      success:'success', running:'running', failed:'failed', pending:'pending', awaiting_ai:'running',
     };
 
     const params = new URLSearchParams(location.search);
@@ -69,7 +69,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
       });
     }
 
-    const FILTER_LABEL: Record<string,string> = { all:'', success:'berhasil', running:'berjalan', failed:'gagal', pending:'menunggu' };
+    const FILTER_LABEL: Record<string,string> = { all:'', success:'success', running:'running', failed:'failed', pending:'pending' };
 
     async function loadTasks() {
       try {
@@ -87,7 +87,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
 
         const tbody = document.getElementById('task-table-body')!;
         if (filtered.length === 0) {
-          tbody.innerHTML = `<div class="px-5 py-10 text-center text-muted text-sm">Tidak ada tugas ${FILTER_LABEL[filter] || ''}.</div>`;
+          tbody.innerHTML = `<div class="px-5 py-10 text-center text-muted text-sm">No ${FILTER_LABEL[filter] || ''} tasks.</div>`;
           return;
         }
         tbody.innerHTML = filtered.map((t:any) => `
@@ -102,7 +102,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
         bindDeleteButtons();
       } catch {
         document.getElementById('task-table-body')!.innerHTML =
-          '<div class="px-5 py-10 text-center text-muted text-sm">Tidak dapat terhubung ke server API.</div>';
+          '<div class="px-5 py-10 text-center text-muted text-sm">Cannot connect to API server.</div>';
       }
     }
 

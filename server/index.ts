@@ -19,6 +19,7 @@ import monitorsRouter from './routes/monitors.js';
 import scraperRouter  from './routes/scraper.js';
 import browserRouter  from './routes/browser.js';
 import visionRouter   from './routes/vision.js';
+import ollamaProxy   from './routes/ollama-proxy.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -40,6 +41,7 @@ app.use(monitorsRouter);
 app.use(scraperRouter);
 app.use(browserRouter);
 app.use(visionRouter);
+app.use(ollamaProxy);
 
 // Production: serve Astro static build
 if (!isDev) {

@@ -19,8 +19,16 @@ export interface AxonQwenSettings {
   systemPrompt: string;
 }
 
+// If accessed from a domain (not localhost), default to /ollama proxy
+function defaultOllamaUrl(): string {
+  if (typeof location === 'undefined') return 'http://localhost:11434';
+  const host = location.hostname;
+  if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:11434';
+  return `${location.origin}/ollama`;
+}
+
 export const DEFAULTS: AxonQwenSettings = {
-  ollamaUrl:    'http://localhost:11434',
+  ollamaUrl:    defaultOllamaUrl(),
   model:        'qwen3.5',
   numCtx:       32768,
   temperature:  0.6,

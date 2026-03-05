@@ -5,20 +5,20 @@ import '../styles/global.css';
 const { title = 'Dashboard', active = 'dashboard' } = Astro.props;
 
 const nav = [
-  { id:'dashboard', label:'Dasbor',        icon:'⬡', href:'/app'          },
-  { id:'chat',      label:'Agen Chat',     icon:'◈', href:'/app/chat'     },
-  { id:'agents',    label:'Agen',          icon:'◎', href:'/app/agents'   },
-  { id:'browser',   label:'Browser RPA',   icon:'⬟', href:'/app/browser'  },
-  { id:'scraper',   label:'Scraper',       icon:'◉', href:'/app/scraper'  },
-  { id:'vision',    label:'Vision',        icon:'◑', href:'/app/vision'   },
-  { id:'monitor',   label:'Monitor',       icon:'⊕', href:'/app/monitor'  },
-  { id:'tasks',     label:'Tugas',         icon:'▦',  href:'/app/tasks'    },
-  { id:'logs',      label:'Log',           icon:'≡',  href:'/app/logs'     },
-  { id:'settings',  label:'Pengaturan',    icon:'⚙',  href:'/app/settings' },
+  { id:'dashboard', label:'Dashboard',    icon:'⬡', href:'/app'          },
+  { id:'chat',      label:'Chat Agent',   icon:'◈', href:'/app/chat'     },
+  { id:'agents',    label:'Agents',       icon:'◎', href:'/app/agents'   },
+  { id:'browser',   label:'Browser RPA',  icon:'⬟', href:'/app/browser'  },
+  { id:'scraper',   label:'Scraper',      icon:'◉', href:'/app/scraper'  },
+  { id:'vision',    label:'Vision',       icon:'◑', href:'/app/vision'   },
+  { id:'monitor',   label:'Monitor',      icon:'⊕', href:'/app/monitor'  },
+  { id:'tasks',     label:'Tasks',        icon:'▦',  href:'/app/tasks'    },
+  { id:'logs',      label:'Logs',         icon:'≡',  href:'/app/logs'     },
+  { id:'settings',  label:'Settings',     icon:'⚙',  href:'/app/settings' },
 ];
 ---
 <!doctype html>
-<html lang="id">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
@@ -41,7 +41,7 @@ const nav = [
     <!-- Ollama status (checked client-side against user's local Ollama) -->
     <div class="mx-4 mt-4 px-3 py-2 rounded-lg bg-wire border border-dim flex items-center gap-2 text-xs" id="status-pill">
       <span class="w-2 h-2 rounded-full bg-muted animate-pulse-dot" id="status-dot"></span>
-      <span class="text-muted" id="status-text">Memeriksa…</span>
+      <span class="text-muted" id="status-text">Checking…</span>
     </div>
 
     <nav class="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
@@ -67,20 +67,20 @@ const nav = [
       <h1 class="font-display font-bold text-sm text-white/80 tracking-wide uppercase">{title}</h1>
       <div class="flex items-center gap-3">
         <span id="ws-badge" class="text-[10px] px-2.5 py-1 rounded-full border border-dim text-muted font-mono">● WS</span>
-        <a href="/" class="text-xs text-muted hover:text-white transition-colors px-3 py-1.5 rounded-lg border border-dim">← Beranda</a>
+        <a href="/" class="text-xs text-muted hover:text-white transition-colors px-3 py-1.5 rounded-lg border border-dim">← Home</a>
       </div>
     </header>
 
     <div id="ollama-banner" class="bg-accent2/10 border-b border-accent2/20 px-6 py-3 items-center gap-4 flex-shrink-0" style="display:none">
       <div class="flex items-center gap-2 text-accent2 text-sm font-mono">
         <span class="w-2 h-2 rounded-full bg-accent2 animate-pulse-dot flex-shrink-0"></span>
-        <span class="font-bold">Ollama tidak terhubung</span>
+        <span class="font-bold">Ollama disconnected</span>
       </div>
       <p class="text-accent2/70 text-xs font-mono hidden sm:block" id="ollama-banner-msg">
-        — Pastikan Ollama sudah terinstall dan berjalan di komputer Anda.
+        — Make sure Ollama is installed and running on your machine.
       </p>
       <a href="/#quickstart" class="ml-auto text-xs px-3 py-1.5 rounded-lg bg-accent2/20 border border-accent2/30 text-accent2 hover:bg-accent2/30 transition-all font-mono flex-shrink-0 whitespace-nowrap">
-        Lihat Panduan Setup →
+        View Setup Guide →
       </a>
     </div>
 
@@ -101,7 +101,7 @@ const nav = [
 
       let settings: any = {};
       try { settings = JSON.parse(localStorage.getItem('axonqwen-settings') || '{}'); } catch {}
-      const url = settings.ollamaUrl || 'http://localhost:11434';
+      const url = settings.ollamaUrl || (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'http://localhost:11434' : location.origin + '/ollama');
 
       if (urlEl) urlEl.textContent = url.replace(/^https?:\/\//, '');
 
@@ -115,9 +115,9 @@ const nav = [
         if (banner) { banner.style.display = 'none'; }
       } catch {
         if (dot)  { dot.className = 'w-2 h-2 rounded-full bg-accent2 animate-pulse-dot'; }
-        if (text) { text.textContent = 'Ollama mati'; }
+        if (text) { text.textContent = 'Ollama offline'; }
         if (banner) { banner.style.display = 'flex'; }
-        if (bannerMsg) { bannerMsg.innerHTML = `— Tidak dapat terhubung ke <code class="text-accent2">${url}</code>. Pastikan Ollama sudah terinstall dan berjalan.`; }
+        if (bannerMsg) { bannerMsg.innerHTML = `— Cannot connect to <code class="text-accent2">${url}</code>. Make sure Ollama is installed and running.`; }
       }
       setTimeout(checkOllamaStatus, 30000);
     })();

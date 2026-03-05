@@ -1,39 +1,39 @@
 ---
 import AppLayout from '../../layouts/AppLayout.astro';
 ---
-<AppLayout title="Pengaturan" active="settings">
+<AppLayout title="Settings" active="settings">
   <div class="max-w-2xl space-y-6">
     <div>
-      <h2 class="font-display font-bold text-white text-2xl mb-1">Pengaturan</h2>
-      <p class="text-muted text-sm">Konfigurasi koneksi Ollama, parameter model, dan default agen.</p>
+      <h2 class="font-display font-bold text-white text-2xl mb-1">Settings</h2>
+      <p class="text-muted text-sm">Configure Ollama connection, model parameters, and agent defaults.</p>
     </div>
     <!-- Ollama Connection -->
     <div class="bg-wire border border-dim rounded-xl p-6 space-y-4">
       <div class="flex items-center justify-between">
-        <h3 class="font-display font-bold text-white text-sm">Koneksi Ollama</h3>
+        <h3 class="font-display font-bold text-white text-sm">Ollama Connection</h3>
         <span id="conn-status" class="text-xs flex items-center gap-2 text-muted">
           <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span>
-          Memeriksa…
+          Checking…
         </span>
       </div>
       <div>
-        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">URL Ollama</label>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Ollama URL</label>
         <div class="flex gap-2">
           <input id="ollama-url" type="text" class="field flex-1 font-mono text-sm" placeholder="http://localhost:11434"/>
-          <button id="test-conn-btn" class="btn-secondary text-xs px-4 whitespace-nowrap">Tes Koneksi</button>
+          <button id="test-conn-btn" class="btn-secondary text-xs px-4 whitespace-nowrap">Test Connection</button>
         </div>
-        <p class="text-[10px] text-muted/50 mt-1">URL Ollama yang berjalan di komputer Anda (default: http://localhost:11434)</p>
+        <p class="text-[10px] text-muted/50 mt-1">URL of Ollama running on your machine (default: http://localhost:11434)</p>
       </div>
       <div id="models-section" style="display:none">
-        <p class="text-[10px] text-muted uppercase tracking-widest mb-2">Model Terinstall</p>
+        <p class="text-[10px] text-muted uppercase tracking-widest mb-2">Installed Models</p>
         <div id="models-list" class="flex flex-wrap gap-2"></div>
       </div>
     </div>
     <!-- Chat Preferences -->
     <div class="bg-wire border border-dim rounded-xl p-6 space-y-5">
-      <h3 class="font-display font-bold text-white text-sm">Preferensi Chat</h3>
+      <h3 class="font-display font-bold text-white text-sm">Chat Preferences</h3>
       <div>
-        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Model Default</label>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Default Model</label>
         <select id="pref-model" class="field">
           {['qwen3.5','qwen3.5:7b','qwen3.5:14b','qwen3.5:27b','qwen3.5:35b'].map(m=>(
             <option value={m}>{m}</option>
@@ -41,11 +41,11 @@ import AppLayout from '../../layouts/AppLayout.astro';
         </select>
       </div>
       <div>
-        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Temperatur Default: <span id="temp-val">0.6</span></label>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Default Temperature: <span id="temp-val">0.6</span></label>
         <input id="pref-temp" type="range" min="0" max="2" step="0.1" value="0.6" class="w-full accent-accent" oninput="document.getElementById('temp-val').textContent=this.value"/>
       </div>
       <div>
-        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Jendela Konteks (num_ctx)</label>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Context Window (num_ctx)</label>
         <select id="pref-ctx" class="field">
           {[8192,16384,32768,65536,131072,262144].map(n=>(
             <option value={n}>{(n/1024)+'K'}</option>
@@ -53,7 +53,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
         </select>
       </div>
       <div>
-        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Maks Token (num_predict)</label>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Max Tokens (num_predict)</label>
         <select id="pref-maxtok" class="field">
           {[1024,2048,4096,8192,16384].map(n=>(
             <option value={n}>{n}</option>
@@ -61,20 +61,22 @@ import AppLayout from '../../layouts/AppLayout.astro';
         </select>
       </div>
       <div>
-        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Prompt Sistem Default</label>
-        <textarea id="pref-sys" rows="4" class="field resize-none" placeholder="Prompt sistem opsional untuk Agen Chat…"></textarea>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Default System Prompt</label>
+        <textarea id="pref-sys" rows="4" class="field resize-none" placeholder="Optional system prompt for Chat Agent…"></textarea>
       </div>
       <div class="flex gap-3">
-        <button id="save-btn" class="btn-primary">Simpan Preferensi</button>
-        <button id="reset-btn" class="btn-secondary text-xs">Reset ke Default</button>
+        <button id="save-btn" class="btn-primary">Save Preferences</button>
+        <button id="reset-btn" class="btn-secondary text-xs">Reset to Defaults</button>
       </div>
-      <p id="save-msg" class="text-green-400 text-xs" style="display:none">Tersimpan!</p>
+      <p id="save-msg" class="text-green-400 text-xs" style="display:none">Saved!</p>
     </div>
   </div>
   <script>
     const STORAGE_KEY = 'axonqwen-settings';
+    const _isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
     const DEFAULTS = {
-      ollamaUrl:'http://localhost:11434', model:'qwen3.5', numCtx:32768,
+      ollamaUrl: _isLocal ? 'http://localhost:11434' : location.origin + '/ollama',
+      model:'qwen3.5', numCtx:32768,
       temperature:0.6, maxTokens:4096, systemPrompt:'',
     };
 
@@ -118,11 +120,11 @@ import AppLayout from '../../layouts/AppLayout.astro';
       const modelsList = document.getElementById('models-list')!;
       const url = urlInput.value.trim() || 'http://localhost:11434';
 
-      testBtn.textContent = '⟳ Mengetes…';
+      testBtn.textContent = '⟳ Testing…';
       testBtn.setAttribute('disabled','');
       testBtn.classList.add('opacity-60');
       statusEl.className = 'text-xs flex items-center gap-2 text-muted';
-      statusEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span> Memeriksa…';
+      statusEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span> Checking…';
 
       try {
         const r = await fetch(`${url}/api/tags`, { signal: AbortSignal.timeout(4000) });
@@ -130,7 +132,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
         const data = await r.json();
         const models: string[] = (data.models || []).map((m: any) => m.name);
         statusEl.className = 'text-xs flex items-center gap-2 text-green-400';
-        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span> Terhubung (${models.length} model)`;
+        statusEl.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span> Connected (${models.length} models)`;
 
         if (models.length > 0) {
           modelsSection.style.display = '';
@@ -138,10 +140,10 @@ import AppLayout from '../../layouts/AppLayout.astro';
         }
       } catch {
         statusEl.className = 'text-xs flex items-center gap-2 text-accent2';
-        statusEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span> Offline — pastikan Ollama berjalan';
+        statusEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span> Offline — make sure Ollama is running';
         modelsSection.style.display = 'none';
       } finally {
-        testBtn.textContent = 'Tes Koneksi';
+        testBtn.textContent = 'Test Connection';
         testBtn.removeAttribute('disabled');
         testBtn.classList.remove('opacity-60');
       }
@@ -153,7 +155,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
     // Save
     const saveBtn = document.getElementById('save-btn')!;
     saveBtn.onclick = () => {
-      saveBtn.textContent = '⟳ Menyimpan…';
+      saveBtn.textContent = '⟳ Saving…';
       saveBtn.classList.add('opacity-60');
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         ollamaUrl:    urlInput.value.trim() || DEFAULTS.ollamaUrl,
@@ -165,8 +167,8 @@ import AppLayout from '../../layouts/AppLayout.astro';
       }));
       const msg = document.getElementById('save-msg')!;
       msg.style.display = '';
-      saveBtn.textContent = '✓ Tersimpan!';
-      setTimeout(() => { msg.style.display = 'none'; saveBtn.textContent = 'Simpan Preferensi'; saveBtn.classList.remove('opacity-60'); }, 1500);
+      saveBtn.textContent = '✓ Saved!';
+      setTimeout(() => { msg.style.display = 'none'; saveBtn.textContent = 'Save Preferences'; saveBtn.classList.remove('opacity-60'); }, 1500);
     };
 
     // Reset

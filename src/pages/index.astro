@@ -2,45 +2,45 @@
 // src/pages/index.astro — Landing Page (Ollama status checked client-side)
 import Base from '../layouts/Base.astro';
 
-const ticker = ['Browser RPA','Vision & OCR','Scraping Cerdas','Isi Form Otomatis','Monitoring Real-Time','256K Konteks','Qwen3.5 Multimodal','OpenClaw Runtime','Playwright','100% Lokal','Tanpa Cloud','Keamanan Enterprise'];
+const ticker = ['Browser RPA','Vision & OCR','Smart Scraping','Auto Form Fill','Real-Time Monitoring','256K Context','Qwen3.5 Multimodal','OpenClaw Runtime','Playwright','100% Local','No Cloud','Enterprise Security'];
 
 const features = [
-  { icon:'🌐', name:'Browser RPA',    tag:'Playwright · Vision',    desc:'Deskripsikan otomasi dengan bahasa alami. Qwen3.5 vision membaca halaman dan menghasilkan script Playwright lengkap.' },
-  { icon:'🔍', name:'Agen Scraper',   tag:'JSON · SPA · Paginasi',  desc:'Buka URL apapun dengan Chromium asli, ekstrak data JSON terstruktur dari halaman dinamis yang dirender JS.' },
-  { icon:'🖼️', name:'Agen Vision',    tag:'Multimodal · OCR',       desc:'Unggah faktur, kontrak, atau gambar apapun. Qwen3.5 mengekstrak semua teks, tabel, dan nilai field.' },
-  { icon:'📡', name:'Agen Monitor',   tag:'Cron · Peringatan',      desc:'Atur pemantau URL cerdas dengan kondisi bahasa alami. Peringatan dikirim via WebSocket secara instan.' },
-  { icon:'⚡', name:'Agen Chat',      tag:'SSE · Markdown',         desc:'Chat streaming ke model Qwen3.5 lokal Anda. Riwayat penuh, prompt kustom, dan rendering markdown.' },
-  { icon:'📊', name:'Reporter',       tag:'Rangkum · Format',       desc:'Kompilasi dan rangkum data yang di-scrape menjadi laporan profesional dalam JSON atau markdown.' },
+  { icon:'🌐', name:'Browser RPA',    tag:'Playwright · Vision',    desc:'Describe automation in natural language. Qwen3.5 vision reads the page and generates a complete Playwright script.' },
+  { icon:'🔍', name:'Scraper Agent',   tag:'JSON · SPA · Pagination', desc:'Open any URL with real Chromium, extract structured JSON data from JS-rendered dynamic pages.' },
+  { icon:'🖼️', name:'Vision Agent',    tag:'Multimodal · OCR',       desc:'Upload invoices, contracts, or any image. Qwen3.5 extracts all text, tables, and field values.' },
+  { icon:'📡', name:'Monitor Agent',   tag:'Cron · Alerts',          desc:'Set up smart URL watchers with natural language conditions. Alerts sent via WebSocket instantly.' },
+  { icon:'⚡', name:'Chat Agent',      tag:'SSE · Markdown',         desc:'Streaming chat to your local Qwen3.5 model. Full history, custom prompts, and markdown rendering.' },
+  { icon:'📊', name:'Reporter',        tag:'Summarize · Format',     desc:'Compile and summarize scraped data into professional reports in JSON or markdown.' },
 ];
 
 const steps = [
   {
     n:'01',
     t:'Install Ollama',
-    desc:'Download dan install Ollama dari ollama.com. Tersedia untuk Windows, macOS, dan Linux.',
+    desc:'Download and install Ollama from ollama.com. Available for Windows, macOS, and Linux.',
     code:'# Windows (winget)\nwinget install Ollama.Ollama\n\n# macOS (Homebrew)\nbrew install ollama\n\n# Linux\ncurl -fsSL https://ollama.com/install.sh | sh',
   },
   {
     n:'02',
-    t:'Jalankan Ollama & Pull Model',
-    desc:'Setelah install, jalankan Ollama lalu download model Qwen 3.5. Pastikan Ollama tetap berjalan di background.',
-    code:'# Jalankan Ollama server (biarkan terminal terbuka)\nollama serve\n\n# Buka terminal baru, download model\nollama pull qwen3.5\n\n# Verifikasi model terinstall\nollama list',
+    t:'Run Ollama & Pull Model',
+    desc:'After installing, run Ollama then download the Qwen 3.5 model. Keep Ollama running in the background.',
+    code:'# Run Ollama server (keep terminal open)\nollama serve\n\n# Open new terminal, download model\nollama pull qwen3.5\n\n# Verify model is installed\nollama list',
   },
   {
     n:'03',
-    t:'Install Dependensi Proyek',
-    desc:'Install npm packages dan browser Chromium untuk fitur Browser RPA dan Scraper.',
-    code:'# Install dependensi\nnpm install\n\n# Install Chromium untuk Playwright\nnpx playwright install chromium',
+    t:'Install Project Dependencies',
+    desc:'Install npm packages and Chromium browser for Browser RPA and Scraper features.',
+    code:'# Install dependencies\nnpm install\n\n# Install Chromium for Playwright\nnpx playwright install chromium',
   },
   {
     n:'04',
-    t:'Jalankan AxonQwen',
-    desc:'Mulai dev server. Dasbor akan tersedia di http://localhost:4321/app.',
-    code:'# Jalankan dev server\nnpm run dev\n\n# Buka browser\n# → http://localhost:4321      (Halaman Utama)\n# → http://localhost:4321/app  (Dasbor)',
+    t:'Run AxonQwen',
+    desc:'Start the dev server. The dashboard will be available at http://localhost:4321/app.',
+    code:'# Run dev server\nnpm run dev\n\n# Open browser\n# → http://localhost:4321      (Landing Page)\n# → http://localhost:4321/app  (Dashboard)',
   },
 ];
 ---
-<Base title="Beranda">
+<Base title="Home">
   <!-- Custom cursor -->
   <div class="cursor fixed w-2.5 h-2.5 rounded-full bg-accent2 pointer-events-none z-[9999] mix-blend-multiply" id="c"></div>
   <div class="cursor-ring fixed w-8 h-8 rounded-full border border-ink pointer-events-none z-[9998]" id="cr"></div>
@@ -52,7 +52,7 @@ const steps = [
       Axon<span class="text-accent">Qwen</span>
     </a>
     <div class="hidden md:flex items-center gap-8">
-      {[['fitur','#features'],['agen','#agents'],['docs','#docs'],['mulai','#quickstart'],['model','#models']].map(([l,h])=>(
+      {[['features','#features'],['agents','#agents'],['docs','#docs'],['start','#quickstart'],['models','#models']].map(([l,h])=>(
         <a href={h} class="text-xs text-muted uppercase tracking-widest hover:text-ink transition-colors">{l}</a>
       ))}
     </div>
@@ -60,9 +60,9 @@ const steps = [
       <!-- Ollama badge (checked client-side) -->
       <span id="ollama-badge" class="text-[10px] px-3 py-1 rounded-full border font-mono flex items-center gap-2 border-dim text-muted bg-dim/5">
         <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span>
-        <span id="ollama-badge-text">Memeriksa…</span>
+        <span id="ollama-badge-text">Checking…</span>
       </span>
-      <a href="/app" class="text-xs px-4 py-2 rounded-md bg-ink text-paper hover:bg-accent hover:text-black transition-all font-mono font-bold">Buka App →</a>
+      <a href="/app" class="text-xs px-4 py-2 rounded-md bg-ink text-paper hover:bg-accent hover:text-black transition-all font-mono font-bold">Open App →</a>
     </div>
   </nav>
 
@@ -72,7 +72,7 @@ const steps = [
     <div class="absolute inset-0 noise pointer-events-none"></div>
 
     <div class="absolute right-12 top-1/2 -translate-y-1/2 flex-col gap-px hidden xl:flex">
-      {[['Static','Astro + Express'],['100%','Lokal · Tanpa Cloud'],['256K','Jendela Konteks'],['5','Agen AI']].map(([v,l])=>(
+      {[['Static','Astro + Express'],['100%','Local · No Cloud'],['256K','Context Window'],['5','AI Agents']].map(([v,l])=>(
         <div class="bg-ink text-paper px-6 py-4 min-w-[168px] first:rounded-t-xl last:rounded-b-xl">
           <div class="font-display font-extrabold text-3xl text-accent leading-none mb-1">{v}</div>
           <div class="text-[10px] text-muted uppercase tracking-widest">{l}</div>
@@ -87,20 +87,20 @@ const steps = [
       </div>
     </div>
     <h1 class="font-display font-extrabold leading-[.9] tracking-tight text-ink reveal delay-100 mb-8 max-w-3xl" style="font-size:clamp(56px,9vw,112px)">
-      Platform<br/><span class="text-accent">Otomasi AI</span><br/>
+      <span class="text-accent">AI Automation</span><br/>Platform<br/>
       <span style="-webkit-text-stroke:1.5px #040811;color:transparent">Enterprise.</span>
     </h1>
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-8 reveal delay-200 max-w-4xl">
       <p class="text-muted text-sm leading-relaxed max-w-md font-mono">
-        AxonQwen berjalan sepenuhnya di perangkat Anda. Otomasi browser, analisis visual, scraping cerdas — didukung Qwen3.5, tanpa data yang keluar dari mesin Anda. Dibangun dengan Astro Static + Express.
+        AxonQwen runs entirely on your device. Browser automation, visual analysis, smart scraping — powered by Qwen3.5, with no data leaving your machine. Built with Astro Static + Express.
       </p>
       <div class="flex items-center gap-3 flex-shrink-0">
-        <a href="#quickstart" class="btn-primary">▶ Mulai Sekarang</a>
-        <a href="/app" class="btn-secondary">Buka App →</a>
+        <a href="#quickstart" class="btn-primary">▶ Get Started</a>
+        <a href="/app" class="btn-secondary">Open App →</a>
       </div>
     </div>
     <div class="absolute bottom-7 left-1/2 -translate-x-1/2 text-muted text-[10px] uppercase tracking-widest flex flex-col items-center gap-1 animate-bounce">
-      <span>Gulir</span><span>↓</span>
+      <span>Scroll</span><span>↓</span>
     </div>
   </section>
 
@@ -116,8 +116,8 @@ const steps = [
   <!-- FEATURES -->
   <section class="bg-ink py-28 px-12" id="features">
     <div class="max-w-6xl mx-auto">
-      <p class="text-gold text-[10px] uppercase tracking-[.16em] mb-4 reveal">Apa yang AxonQwen Lakukan</p>
-      <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-16 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Semua Alat Otomasi yang Anda Butuhkan.</h2>
+      <p class="text-gold text-[10px] uppercase tracking-[.16em] mb-4 reveal">What AxonQwen Does</p>
+      <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-16 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">All the Automation Tools You Need.</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-dim rounded-xl overflow-hidden border border-dim reveal delay-200">
         {features.map(f=>(
           <div class="bg-wire p-9 hover:bg-[#1a2038] transition-colors cursor-default">
@@ -134,24 +134,24 @@ const steps = [
   <!-- AGENTS -->
   <section class="bg-paper py-28 px-12" id="agents">
     <div class="max-w-5xl mx-auto">
-      <p class="text-accent2 text-[10px] uppercase tracking-[.16em] mb-4 reveal">Agen Bawaan</p>
-      <h2 class="font-display font-extrabold text-ink leading-tight tracking-tight mb-16 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Lima Agen, Satu Platform.</h2>
+      <p class="text-accent2 text-[10px] uppercase tracking-[.16em] mb-4 reveal">Built-in Agents</p>
+      <h2 class="font-display font-extrabold text-ink leading-tight tracking-tight mb-16 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Five Agents, One Platform.</h2>
       <div class="border border-border rounded-xl overflow-hidden reveal">
         {[
-          ['Browser RPA', 'Memahami bahasa alami dan menghasilkan script Playwright. Menggabungkan vision dan reasoning untuk menavigasi UI yang kompleks.'],
-          ['Scraper',     'Memuat URL apapun dengan Chromium asli (menangani SPA yang dirender JS), lalu menggunakan Qwen3.5 untuk parsing menjadi JSON bersih.'],
-          ['Vision',      'Kirim gambar apapun sebagai base64. Qwen3.5 multimodal mengekstrak semua teks, tabel, dan field formulir — tanpa OCR eksternal.'],
-          ['Monitor',     'Jadwalkan pemeriksaan URL berkala dengan kondisi pemicu bahasa alami. Peringatan dikirim via WebSocket secara instan.'],
-          ['Chat',        'Chat streaming penuh via API route → Ollama. Memori persisten melalui OpenClaw. Opsional Telegram/Slack.'],
+          ['Browser RPA', 'Understands natural language and generates Playwright scripts. Combines vision and reasoning to navigate complex UIs.'],
+          ['Scraper',     'Loads any URL with real Chromium (handles JS-rendered SPAs), then uses Qwen3.5 to parse into clean JSON.'],
+          ['Vision',      'Send any image as base64. Qwen3.5 multimodal extracts all text, tables, and form fields — no external OCR needed.'],
+          ['Monitor',     'Schedule periodic URL checks with natural language trigger conditions. Alerts sent via WebSocket instantly.'],
+          ['Chat',        'Full streaming chat via API route → Ollama. Persistent memory through OpenClaw. Optional Telegram/Slack.'],
         ].map(([name, desc], i)=>(
           <div class="flex items-start gap-8 px-8 py-7 border-b border-border last:border-0 hover:bg-paper2 transition-colors">
             <div class="font-display font-extrabold text-4xl text-border min-w-[56px] leading-none">0{i+1}</div>
             <div class="flex-1">
-              <h3 class="font-display font-bold text-ink text-xl mb-2">Agen {name}</h3>
+              <h3 class="font-display font-bold text-ink text-xl mb-2">{name} Agent</h3>
               <p class="text-muted text-[13px] leading-relaxed">{desc}</p>
             </div>
             <div class="flex items-center gap-1.5 text-xs text-muted flex-shrink-0 pt-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-green animate-pulse-dot"></span> Aktif
+              <span class="w-1.5 h-1.5 rounded-full bg-green animate-pulse-dot"></span> Active
             </div>
           </div>
         ))}
@@ -162,22 +162,22 @@ const steps = [
   <!-- DOCS -->
   <section class="bg-ink py-28 px-12" id="docs">
     <div class="max-w-5xl mx-auto">
-      <p class="text-gold text-[10px] uppercase tracking-[.16em] mb-4 reveal">Referensi API</p>
-      <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-4 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Express API Routes.<br/>Server Mandiri.</h2>
-      <p class="text-muted text-sm leading-relaxed max-w-lg mb-12 reveal delay-200">Semua endpoint adalah route handler Express — TypeScript murni, berjalan di server Node.js terpisah. Frontend disajikan sebagai file statis.</p>
+      <p class="text-gold text-[10px] uppercase tracking-[.16em] mb-4 reveal">API Reference</p>
+      <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-4 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Express API Routes.<br/>Standalone Server.</h2>
+      <p class="text-muted text-sm leading-relaxed max-w-lg mb-12 reveal delay-200">All endpoints are Express route handlers — pure TypeScript, running on a separate Node.js server. Frontend is served as static files.</p>
       <div class="space-y-3 reveal delay-300">
         {[
-          ['GET',   '/api/health',           'Kesehatan server + uptime',       'get'],
-          ['GET',   '/api/ollama/status',    'Koneksi Ollama + daftar model',   'get'],
-          ['POST',  '/api/chat',             'Chat completion streaming (SSE)',  'post'],
-          ['GET',   '/api/tasks',            'Daftar semua tugas (terbaru)',     'get'],
-          ['DELETE','/api/tasks/[id]',       'Hapus catatan tugas',             'del'],
-          ['POST',  '/api/browser/run',      'Browser RPA — tugas Playwright',  'post'],
-          ['POST',  '/api/scraper/run',      'Tugas web scraping',              'post'],
-          ['POST',  '/api/vision/analyze',   'Analisis gambar (base64)',        'post'],
-          ['POST',  '/api/monitor/start',    'Mulai monitor URL',               'post'],
-          ['GET',   '/api/monitors',         'Daftar monitor aktif',            'get'],
-          ['DELETE','/api/monitor/[id]',     'Hentikan monitor',                'del'],
+          ['GET',   '/api/health',           'Server health + uptime',          'get'],
+          ['GET',   '/api/ollama/status',    'Ollama connection + model list',  'get'],
+          ['POST',  '/api/chat',             'Streaming chat completion (SSE)', 'post'],
+          ['GET',   '/api/tasks',            'List all tasks (newest first)',   'get'],
+          ['DELETE','/api/tasks/[id]',       'Delete task record',              'del'],
+          ['POST',  '/api/browser/run',      'Browser RPA — Playwright task',  'post'],
+          ['POST',  '/api/scraper/run',      'Web scraping task',               'post'],
+          ['POST',  '/api/vision/analyze',   'Image analysis (base64)',         'post'],
+          ['POST',  '/api/monitor/start',    'Start URL monitor',               'post'],
+          ['GET',   '/api/monitors',         'List active monitors',            'get'],
+          ['DELETE','/api/monitor/[id]',     'Stop monitor',                    'del'],
         ].map(([m,p,d,cls])=>(
           <div class="flex items-center gap-3 px-4 py-3 bg-[#060912] border border-dim rounded-lg">
             <span class={`text-[10px] font-bold px-2 py-0.5 rounded border flex-shrink-0 ${
@@ -207,10 +207,10 @@ ws.onmessage = ({ data }) => {
   <!-- QUICKSTART -->
   <section class="bg-paper2 py-28 px-12" id="quickstart">
     <div class="max-w-4xl mx-auto">
-      <p class="text-accent2 text-[10px] uppercase tracking-[.16em] mb-4 reveal">Memulai</p>
-      <h2 class="font-display font-extrabold text-ink leading-tight tracking-tight mb-6 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Siap dalam 4 Langkah.</h2>
+      <p class="text-accent2 text-[10px] uppercase tracking-[.16em] mb-4 reveal">Getting Started</p>
+      <h2 class="font-display font-extrabold text-ink leading-tight tracking-tight mb-6 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Ready in 4 Steps.</h2>
       <p class="text-muted text-sm leading-relaxed max-w-lg mb-16 reveal delay-200">
-        AxonQwen membutuhkan Ollama sebagai AI engine lokal. Ikuti langkah berikut untuk memulai.
+        AxonQwen requires Ollama as the local AI engine. Follow these steps to get started.
       </p>
       <div class="divide-y divide-border">
         {steps.map((s, i)=>(
@@ -230,35 +230,35 @@ ws.onmessage = ({ data }) => {
       <!-- Troubleshooting -->
       <div class="mt-16 bg-ink rounded-xl p-8 reveal" id="troubleshooting">
         <h3 class="font-display font-bold text-white text-lg mb-6 flex items-center gap-3">
-          <span class="text-gold">!</span> Pemecahan Masalah
+          <span class="text-gold">!</span> Troubleshooting
         </h3>
         <div class="space-y-5 text-sm font-mono">
           <div class="flex gap-4">
-            <span class="text-accent2 flex-shrink-0 mt-0.5">T:</span>
+            <span class="text-accent2 flex-shrink-0 mt-0.5">Q:</span>
             <div>
-              <p class="text-white mb-2">Chat menampilkan error "fetch failed"</p>
-              <p class="text-muted text-xs leading-relaxed">Ollama tidak berjalan. Buka terminal dan jalankan <code class="text-accent">ollama serve</code>. Pastikan URL di Pengaturan sesuai (default: <code class="text-accent">http://localhost:11434</code>).</p>
+              <p class="text-white mb-2">Chat shows "fetch failed" error</p>
+              <p class="text-muted text-xs leading-relaxed">Ollama is not running. Open a terminal and run <code class="text-accent">ollama serve</code>. Make sure the URL in Settings matches (default: <code class="text-accent">http://localhost:11434</code>).</p>
             </div>
           </div>
           <div class="flex gap-4">
-            <span class="text-accent2 flex-shrink-0 mt-0.5">T:</span>
+            <span class="text-accent2 flex-shrink-0 mt-0.5">Q:</span>
             <div>
-              <p class="text-white mb-2">Ollama berjalan tapi model tidak ditemukan</p>
-              <p class="text-muted text-xs leading-relaxed">Pull model terlebih dahulu: <code class="text-accent">ollama pull qwen3.5</code>. Cek model tersedia dengan <code class="text-accent">ollama list</code>.</p>
+              <p class="text-white mb-2">Ollama is running but model not found</p>
+              <p class="text-muted text-xs leading-relaxed">Pull the model first: <code class="text-accent">ollama pull qwen3.5</code>. Check available models with <code class="text-accent">ollama list</code>.</p>
             </div>
           </div>
           <div class="flex gap-4">
-            <span class="text-accent2 flex-shrink-0 mt-0.5">T:</span>
+            <span class="text-accent2 flex-shrink-0 mt-0.5">Q:</span>
             <div>
-              <p class="text-white mb-2">Dasbor kosong / "Server offline"</p>
-              <p class="text-muted text-xs leading-relaxed">Pastikan dev server berjalan (<code class="text-accent">npm run dev</code>) dan akses melalui <code class="text-accent">http://localhost:4321/app</code>.</p>
+              <p class="text-white mb-2">Dashboard is empty / "Server offline"</p>
+              <p class="text-muted text-xs leading-relaxed">Make sure the dev server is running (<code class="text-accent">npm run dev</code>) and access via <code class="text-accent">http://localhost:4321/app</code>.</p>
             </div>
           </div>
           <div class="flex gap-4">
-            <span class="text-accent2 flex-shrink-0 mt-0.5">T:</span>
+            <span class="text-accent2 flex-shrink-0 mt-0.5">Q:</span>
             <div>
               <p class="text-white mb-2">Browser RPA / Scraper error</p>
-              <p class="text-muted text-xs leading-relaxed">Install browser Chromium: <code class="text-accent">npx playwright install chromium</code>.</p>
+              <p class="text-muted text-xs leading-relaxed">Install Chromium browser: <code class="text-accent">npx playwright install chromium</code>.</p>
             </div>
           </div>
         </div>
@@ -269,15 +269,15 @@ ws.onmessage = ({ data }) => {
   <!-- MODELS -->
   <section class="bg-paper py-28 px-12" id="models">
     <div class="max-w-5xl mx-auto">
-      <p class="text-accent text-[10px] uppercase tracking-[.16em] mb-4 reveal">Pilihan Model</p>
-      <h2 class="font-display font-extrabold text-ink leading-tight tracking-tight mb-12 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Pilih Model Qwen3.5 Anda.</h2>
+      <p class="text-accent text-[10px] uppercase tracking-[.16em] mb-4 reveal">Model Selection</p>
+      <h2 class="font-display font-extrabold text-ink leading-tight tracking-tight mb-12 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Choose Your Qwen3.5 Model.</h2>
       <div class="border border-border rounded-xl overflow-hidden reveal delay-200">
         <table class="w-full text-sm">
           <thead><tr class="bg-paper2 text-[10px] uppercase tracking-widest text-muted border-b border-border">
             <th class="px-6 py-3 text-left">Model</th>
             <th class="px-6 py-3 text-left font-mono">ID</th>
             <th class="px-6 py-3 text-left">RAM</th>
-            <th class="px-6 py-3 text-left">Konteks</th>
+            <th class="px-6 py-3 text-left">Context</th>
             <th class="px-6 py-3"></th>
           </tr></thead>
           <tbody>
@@ -293,7 +293,7 @@ ws.onmessage = ({ data }) => {
                 <td class="px-6 py-4 font-mono text-muted text-xs">{id}</td>
                 <td class="px-6 py-4 text-muted text-xs">{ram}</td>
                 <td class="px-6 py-4 text-muted text-xs">{ctx}</td>
-                <td class="px-6 py-4">{rec&&<span class="badge badge-success">Disarankan</span>}</td>
+                <td class="px-6 py-4">{rec&&<span class="badge badge-success">Recommended</span>}</td>
               </tr>
             ))}
           </tbody>
@@ -309,14 +309,14 @@ ws.onmessage = ({ data }) => {
       <div class="w-[600px] h-[400px] rounded-full bg-accent/5 blur-[80px]"></div>
     </div>
     <div class="relative z-10">
-      <p class="text-gold text-[10px] uppercase tracking-[.16em] mb-6">Mulai Otomasi</p>
+      <p class="text-gold text-[10px] uppercase tracking-[.16em] mb-6">Start Automating</p>
       <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-6 reveal" style="font-size:clamp(40px,6vw,80px)">
-        Tenaga Kerja AI Anda.<br/><span class="text-accent">Dimulai Sekarang.</span>
+        Your AI Workforce.<br/><span class="text-accent">Starts Now.</span>
       </h2>
-      <p class="text-muted text-sm mb-10 max-w-md mx-auto">Tanpa langganan. Tanpa biaya cloud. Tanpa data yang keluar dari mesin Anda.</p>
+      <p class="text-muted text-sm mb-10 max-w-md mx-auto">No subscriptions. No cloud costs. No data leaving your machine.</p>
       <div class="flex items-center justify-center gap-4 reveal delay-200">
-        <a href="#quickstart" class="btn-primary text-sm px-8 py-3">▶ Mulai Gratis</a>
-        <a href="/app" class="btn-secondary text-sm px-8 py-3">Buka Dasbor →</a>
+        <a href="#quickstart" class="btn-primary text-sm px-8 py-3">▶ Start Free</a>
+        <a href="/app" class="btn-secondary text-sm px-8 py-3">Open Dashboard →</a>
       </div>
     </div>
   </section>
@@ -325,7 +325,7 @@ ws.onmessage = ({ data }) => {
   <footer class="bg-[#020407] px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-dim">
     <div class="font-display font-extrabold text-white text-sm">Axon<span class="text-accent">Qwen</span></div>
     <div class="flex gap-6">
-      {[['Fitur','#features'],['Agen','#agents'],['Docs','#docs'],['Mulai','#quickstart'],['Masalah','#troubleshooting'],['Dasbor','/app']].map(([l,h])=>(
+      {[['Features','#features'],['Agents','#agents'],['Docs','#docs'],['Start','#quickstart'],['Troubleshoot','#troubleshooting'],['Dashboard','/app']].map(([l,h])=>(
         <a href={h} class="text-[11px] text-muted/50 hover:text-white transition-colors font-mono">{l}</a>
       ))}
     </div>
@@ -349,17 +349,17 @@ ws.onmessage = ({ data }) => {
       const badgeText = document.getElementById('ollama-badge-text');
       let settings: any = {};
       try { settings = JSON.parse(localStorage.getItem('axonqwen-settings') || '{}'); } catch {}
-      const url = settings.ollamaUrl || 'http://localhost:11434';
+      const url = settings.ollamaUrl || (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'http://localhost:11434' : location.origin + '/ollama');
       try {
         const r = await fetch(`${url}/api/tags`, { signal: AbortSignal.timeout(4000) });
         if (!r.ok) throw new Error();
         const data = await r.json();
         const count = data.models?.length ?? 0;
         if (badge) badge.className = 'text-[10px] px-3 py-1 rounded-full border font-mono flex items-center gap-2 border-green/30 text-green bg-green/5';
-        if (badgeText) badgeText.textContent = `Ollama: ${count} model`;
+        if (badgeText) badgeText.textContent = `Ollama: ${count} models`;
       } catch {
         if (badge) badge.className = 'text-[10px] px-3 py-1 rounded-full border font-mono flex items-center gap-2 border-accent2/30 text-accent2 bg-accent2/5';
-        if (badgeText) badgeText.textContent = 'Ollama mati';
+        if (badgeText) badgeText.textContent = 'Ollama offline';
       }
     })();
   </script>

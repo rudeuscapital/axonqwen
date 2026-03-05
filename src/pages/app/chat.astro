@@ -1,7 +1,7 @@
 ---
 import AppLayout from '../../layouts/AppLayout.astro';
 ---
-<AppLayout title="Agen Chat" active="chat">
+<AppLayout title="Chat Agent" active="chat">
   <div class="flex h-full gap-0" id="chat-app">
     <!-- Messages area -->
     <div class="flex-1 flex flex-col h-full min-w-0">
@@ -10,13 +10,13 @@ import AppLayout from '../../layouts/AppLayout.astro';
           <div class="text-6xl text-muted/30">◈</div>
           <div>
             <h3 class="font-display font-bold text-white text-xl mb-2">AxonQwen Chat</h3>
-            <p class="text-muted text-sm max-w-sm">Qwen3.5 berjalan secara lokal via Ollama. Tanyakan apapun tentang otomasi.</p>
+            <p class="text-muted text-sm max-w-sm">Qwen3.5 running locally via Ollama. Ask anything about automation.</p>
           </div>
           <div class="grid grid-cols-1 gap-2 w-full max-w-md" id="quick-actions">
-            <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">Daftar langkah-langkah untuk scraping halaman produk</button>
-            <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">Buat script Playwright untuk mengisi form login</button>
-            <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">Ekstrak semua tabel dari URL sebagai JSON</button>
-            <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">Tulis otomasi untuk memantau perubahan harga</button>
+            <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">List the steps to scrape a product page</button>
+            <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">Write a Playwright script to fill a login form</button>
+            <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">Extract all tables from a URL as JSON</button>
+            <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">Write automation to monitor price changes</button>
           </div>
         </div>
       </div>
@@ -27,16 +27,16 @@ import AppLayout from '../../layouts/AppLayout.astro';
       <!-- Input -->
       <div class="border-t border-dim p-4 flex-shrink-0">
         <div class="flex gap-3">
-          <textarea id="chat-input" rows="2" placeholder="Ketik pesan… (Enter untuk kirim, Shift+Enter baris baru)"
+          <textarea id="chat-input" rows="2" placeholder="Type a message… (Enter to send, Shift+Enter for new line)"
             class="field flex-1 resize-none leading-relaxed"></textarea>
           <button id="send-btn" class="btn-primary px-6 self-end">↑</button>
         </div>
-        <button id="clear-btn" class="mt-2 text-[11px] text-muted hover:text-accent2 transition-colors font-mono hidden">✕ Hapus</button>
+        <button id="clear-btn" class="mt-2 text-[11px] text-muted hover:text-accent2 transition-colors font-mono hidden">✕ Clear</button>
       </div>
     </div>
     <!-- Settings sidebar -->
     <div class="w-60 flex-shrink-0 border-l border-dim p-5 space-y-5 overflow-y-auto hidden xl:block bg-[#02040a]">
-      <h3 class="font-display font-bold text-white text-sm">Pengaturan</h3>
+      <h3 class="font-display font-bold text-white text-sm">Settings</h3>
       <div>
         <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Model</label>
         <select id="model-sel" class="field text-xs">
@@ -46,16 +46,16 @@ import AppLayout from '../../layouts/AppLayout.astro';
         </select>
       </div>
       <div>
-        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Temperatur: <span id="temp-val">0.6</span></label>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Temperature: <span id="temp-val">0.6</span></label>
         <input id="temp-range" type="range" min="0" max="2" step="0.1" value="0.6" class="w-full accent-accent"/>
       </div>
       <div>
-        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Prompt Sistem</label>
-        <textarea id="sys-prompt" rows="4" placeholder="Opsional…" class="field text-xs resize-none"></textarea>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">System Prompt</label>
+        <textarea id="sys-prompt" rows="4" placeholder="Optional…" class="field text-xs resize-none"></textarea>
       </div>
       <div class="pt-2 border-t border-dim space-y-2 text-[11px]">
-        <div class="flex justify-between"><span class="text-muted">Pesan</span><span id="msg-count" class="text-white">0</span></div>
-        <div class="flex justify-between"><span class="text-muted">Status</span><span id="stream-status" class="text-green-400">Siap</span></div>
+        <div class="flex justify-between"><span class="text-muted">Messages</span><span id="msg-count" class="text-white">0</span></div>
+        <div class="flex justify-between"><span class="text-muted">Status</span><span id="stream-status" class="text-green-400">Ready</span></div>
       </div>
     </div>
   </div>
@@ -75,7 +75,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
     const chatProgress = document.getElementById('chat-progress')!;
     const chatSteps    = document.getElementById('chat-steps')!;
 
-    const CSTEPS = ['Menghubung', 'Berpikir', 'Menghasilkan', 'Selesai'];
+    const CSTEPS = ['Connecting', 'Thinking', 'Generating', 'Done'];
     function chatSetStep(n: number) {
       let h = '';
       CSTEPS.forEach((s, i) => {
@@ -117,7 +117,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
       if (thinking) {
         html += `<details class="mb-2 group" ${!content ? 'open' : ''}>
           <summary class="text-[11px] text-muted cursor-pointer select-none hover:text-accent transition-colors">
-            <span class="text-accent/60">◈</span> Berpikir${!content ? '<span class="animate-pulse ml-1">…</span>' : ''}
+            <span class="text-accent/60">◈</span> Thinking${!content ? '<span class="animate-pulse ml-1">…</span>' : ''}
           </summary>
           <div class="mt-1.5 pl-3 border-l border-dim text-xs text-muted/80 leading-relaxed">${md(thinking)}</div>
         </details>`;
@@ -167,7 +167,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
 
       try {
         const s = loadSettings();
-        const ollamaUrl = s.ollamaUrl || 'http://localhost:11434';
+        const ollamaUrl = s.ollamaUrl || (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'http://localhost:11434' : location.origin + '/ollama');
         const model = modelSel.value || s.model || 'qwen3.5';
         const sysContent = sysPmt.value || s.systemPrompt || 'You are AxonQwen, an enterprise-grade AI automation agent powered by Qwen3.5. Be precise and professional.';
 
@@ -176,7 +176,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
           const ping = await fetch(`${ollamaUrl}/api/tags`, { signal: AbortSignal.timeout(5000) });
           if (!ping.ok) throw new Error('not ok');
         } catch {
-          throw new Error(`Tidak dapat terhubung ke Ollama di ${ollamaUrl}. Pastikan Ollama sudah berjalan.`);
+          throw new Error(`Cannot connect to Ollama at ${ollamaUrl}. Make sure Ollama is running.`);
         }
         chatSetStep(1);
 
@@ -200,10 +200,10 @@ import AppLayout from '../../layouts/AppLayout.astro';
         if (!res.ok) {
           let errMsg = `HTTP ${res.status}`;
           try { const b = await res.json(); errMsg = b.error || errMsg; } catch {}
-          if (res.status === 404) errMsg = `Model "${model}" tidak ditemukan. Jalankan: ollama pull ${model}`;
+          if (res.status === 404) errMsg = `Model "${model}" not found. Run: ollama pull ${model}`;
           throw new Error(errMsg);
         }
-        if (!res.body) throw new Error('Tidak ada body respons dari Ollama');
+        if (!res.body) throw new Error('No response body from Ollama');
         const reader  = res.body.getReader();
         const decoder = new TextDecoder();
         let buf = '';
@@ -232,19 +232,19 @@ import AppLayout from '../../layouts/AppLayout.astro';
           }
         }
         if (!accumulated && !thinkingText) {
-          bubble.innerHTML = '<span class="text-muted italic">Model tidak memberikan respons.</span>';
+          bubble.innerHTML = '<span class="text-muted italic">Model did not respond.</span>';
         } else {
-          bubble.innerHTML = renderBubble(thinkingText, accumulated || '(hanya berpikir — tidak ada jawaban akhir)');
+          bubble.innerHTML = renderBubble(thinkingText, accumulated || '(thinking only — no final answer)');
         }
-        history.push({ role:'assistant', content: accumulated || thinkingText || '(tidak ada respons)' });
+        history.push({ role:'assistant', content: accumulated || thinkingText || '(no response)' });
         msgCount.textContent = String(history.length);
       } catch(e: any) {
-        const errText = e?.message || 'Kesalahan tidak diketahui';
-        const isConnection = /failed to fetch|networkerror|abort|tidak dapat terhubung/i.test(errText);
+        const errText = e?.message || 'Unknown error';
+        const isConnection = /failed to fetch|networkerror|abort|cannot connect/i.test(errText);
         bubble.innerHTML = `<div class="space-y-2">
           <p style="color:#ff4444;font-weight:600;">Error: ${errText.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
-          ${isConnection ? `<p class="text-muted text-xs">Pastikan Ollama berjalan di komputer Anda. Cek dengan perintah: <code class="bg-black/40 px-1.5 py-0.5 rounded text-[11px]">ollama serve</code></p>
-          <a href="/app/settings" class="inline-block text-xs text-accent hover:underline">Buka Pengaturan →</a>` : ''}
+          ${isConnection ? `<p class="text-muted text-xs">Make sure Ollama is running on your machine. Check with: <code class="bg-black/40 px-1.5 py-0.5 rounded text-[11px]">ollama serve</code></p>
+          <a href="/app/settings" class="inline-block text-xs text-accent hover:underline">Open Settings →</a>` : ''}
         </div>`;
         if (history.length && history[history.length-1].role === 'user') {
           history.pop();
@@ -255,7 +255,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
       streaming = false;
       chatSetStep(3);
       setTimeout(() => chatProgress.classList.add('hidden'), 1000);
-      streamStatus.textContent = 'Siap';
+      streamStatus.textContent = 'Ready';
       streamStatus.className   = 'text-green-400';
       sendBtn.textContent = '↑';
     }
