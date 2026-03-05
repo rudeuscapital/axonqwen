@@ -1,20 +1,17 @@
-// src/pages/api/scraper/run.ts
-import type { APIRoute } from 'astro';
-import { createTask, updateTask, elapsed, log, broadcast } from '../../../lib/server';
+import { Router } from 'express';
+import { createTask, updateTask, elapsed, log, broadcast } from '../store.js';
 
-export const POST: APIRoute = async ({ request }) => {
-  let body: any;
-  try { body = await request.json(); } catch {
-    return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
-  }
+const router = Router();
 
-  const { url, fields } = body;
-  if (!url) return Response.json({ error: 'url is required' }, { status: 400 });
+router.post('/api/scraper/run', (req, res) => {
+  const { url, fields } = req.body;
+  if (!url) return res.status(400).json({ error: 'url is required' });
 
   const task = createTask(`Scrape: ${url}`, 'scraper');
   updateTask(task.id, { status: 'running' });
   const t0 = Date.now();
-  const resp = Response.json({ taskId: task.id, status: 'running' });
+
+  res.json({ taskId: task.id, status: 'running' });
 
   setTimeout(async () => {
     let browser: import('playwright').Browser | null = null;
@@ -40,20 +37,14 @@ export const POST: APIRoute = async ({ request }) => {
 
       const dur = elapsed(t0);
       updateTask(task.id, {
-        status:   'awaiting_ai',
-        duration: dur,
-        result:   { pageText: text, pageTitle: title, url, fieldsRequested: fields ?? 'all' },
+        status: 'awaiting_ai', duration: dur,
+        result: { pageText: text, pageTitle: title, url, fieldsRequested: fields ?? 'all' },
       });
       broadcast({
-        type:     'scraper_data_ready',
-        taskId:   task.id,
-        pageText: text,
-        pageTitle: title,
-        url,
-        fields:   fields ?? 'all relevant data',
+        type: 'scraper_data_ready', taskId: task.id,
+        pageText: text, pageTitle: title, url, fields: fields ?? 'all relevant data',
       });
-      log('OK', `[${task.id}] Page scraped in ${dur} — awaiting client-side AI extraction`);
-
+      log('OK', `[${task.id}] Page scraped in ${dur}`);
     } catch (err: any) {
       if (browser) { try { await browser.close(); } catch {} }
       const dur = elapsed(t0);
@@ -61,6 +52,6 @@ export const POST: APIRoute = async ({ request }) => {
       log('ERROR', `[${task.id}] Scraping failed: ${err.message}`);
     }
   }, 0);
+});
 
-  return resp;
-};
+export default router;

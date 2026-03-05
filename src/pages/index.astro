@@ -72,7 +72,7 @@ const steps = [
     <div class="absolute inset-0 noise pointer-events-none"></div>
 
     <div class="absolute right-12 top-1/2 -translate-y-1/2 flex-col gap-px hidden xl:flex">
-      {[['SSR','Astro Server-Side'],['100%','Local · Zero Cloud'],['256K','Context Window'],['5','AI Agents']].map(([v,l])=>(
+      {[['Static','Astro + Express'],['100%','Local · Zero Cloud'],['256K','Context Window'],['5','AI Agents']].map(([v,l])=>(
         <div class="bg-ink text-paper px-6 py-4 min-w-[168px] first:rounded-t-xl last:rounded-b-xl">
           <div class="font-display font-extrabold text-3xl text-accent leading-none mb-1">{v}</div>
           <div class="text-[10px] text-muted uppercase tracking-widest">{l}</div>
@@ -83,7 +83,7 @@ const steps = [
     <div class="reveal">
       <div class="inline-flex items-center gap-2 bg-ink text-paper px-4 py-1.5 rounded-full text-[11px] font-mono uppercase tracking-widest mb-8">
         <span class="w-1.5 h-1.5 rounded-full bg-green animate-pulse-dot"></span>
-        Astro SSR + React + Node Adapter
+        Astro Static + React + Express API
       </div>
     </div>
     <h1 class="font-display font-extrabold leading-[.9] tracking-tight text-ink reveal delay-100 mb-8 max-w-3xl" style="font-size:clamp(56px,9vw,112px)">
@@ -92,7 +92,7 @@ const steps = [
     </h1>
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-8 reveal delay-200 max-w-4xl">
       <p class="text-muted text-sm leading-relaxed max-w-md font-mono">
-        AxonQwen runs entirely on your own hardware. Browser automation, vision analysis, intelligent scraping — powered by Qwen3.5, with zero data leaving your machine. Built with Astro SSR + React.
+        AxonQwen runs entirely on your own hardware. Browser automation, vision analysis, intelligent scraping — powered by Qwen3.5, with zero data leaving your machine. Built with Astro Static + Express.
       </p>
       <div class="flex items-center gap-3 flex-shrink-0">
         <a href="#quickstart" class="btn-primary">▶ Get Started</a>
@@ -313,7 +313,7 @@ ws.onmessage = ({ data }) => {
       <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-6 reveal" style="font-size:clamp(40px,6vw,80px)">
         Your AI Workforce.<br/><span class="text-accent">Starts Now.</span>
       </h2>
-      <p class="text-muted text-sm mb-10 max-w-md mx-auto">No subscriptions. No cloud bills. No data leaving your machine. Pure Astro SSR.</p>
+      <p class="text-muted text-sm mb-10 max-w-md mx-auto">No subscriptions. No cloud bills. No data leaving your machine. Pure Astro Static + Express.</p>
       <div class="flex items-center justify-center gap-4 reveal delay-200">
         <a href="#quickstart" class="btn-primary text-sm px-8 py-3">▶ Get Started Free</a>
         <a href="/app" class="btn-secondary text-sm px-8 py-3">Open Dashboard →</a>
@@ -329,7 +329,7 @@ ws.onmessage = ({ data }) => {
         <a href={h} class="text-[11px] text-muted/50 hover:text-white transition-colors font-mono">{l}</a>
       ))}
     </div>
-    <div class="text-[11px] text-muted/30 font-mono">Astro SSR v1.0.0 · MIT · Qwen3.5 + Ollama</div>
+    <div class="text-[11px] text-muted/30 font-mono">Astro Static v1.0.0 · MIT · Qwen3.5 + Ollama</div>
   </footer>
 
   <script>

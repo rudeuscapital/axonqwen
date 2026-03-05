@@ -1,102 +1,113 @@
 ---
-// src/pages/app/tasks.astro — SSR
+// src/pages/app/tasks.astro — CSR
 import AppLayout from '../../layouts/AppLayout.astro';
-import { tasks as taskStore } from '../../lib/server';
-
-const url    = new URL(Astro.request.url);
-const filter = url.searchParams.get('status') ?? 'all';
-
-const allTasks = Array.from(taskStore.values()).sort((a, b) => b.id.localeCompare(a.id));
-const filtered = filter === 'all' ? allTasks : allTasks.filter(t => t.status === filter);
-
-const counts = {
-  all:     allTasks.length,
-  success: allTasks.filter(t => t.status === 'success').length,
-  running: allTasks.filter(t => t.status === 'running').length,
-  failed:  allTasks.filter(t => t.status === 'failed').length,
-  pending: allTasks.filter(t => t.status === 'pending').length,
-};
-
-const STATUS_CLASS: Record<string, string> = {
-  success:'badge badge-success', running:'badge badge-running',
-  failed:'badge badge-failed',   pending:'badge badge-pending',
-};
-
-function relTime(iso: string): string {
-  const d = Date.now() - new Date(iso).getTime();
-  if (d < 60_000)     return 'just now';
-  if (d < 3_600_000)  return Math.floor(d / 60_000) + 'm ago';
-  return Math.floor(d / 3_600_000) + 'h ago';
-}
 ---
 <AppLayout title="Tasks" active="tasks">
   <div class="space-y-4 h-full flex flex-col">
     <div class="flex items-center justify-between flex-shrink-0">
       <h2 class="font-display font-bold text-white text-2xl">Tasks</h2>
-      <a href="/app/tasks" class="text-xs text-muted hover:text-accent transition-colors font-mono">↻ Refresh</a>
+      <button id="refresh-btn" class="text-xs text-muted hover:text-accent transition-colors font-mono">↻ Refresh</button>
     </div>
 
     <!-- Filter tabs -->
-    <div class="flex gap-1 bg-wire border border-dim rounded-lg p-1 w-fit flex-shrink-0">
-      {(['all','success','running','failed','pending'] as const).map(f => (
-        <a href={`/app/tasks?status=${f}`}
-           class={`px-3 py-1.5 rounded text-xs font-mono transition-all ${filter === f ? 'bg-dim text-white' : 'text-muted hover:text-white'}`}>
-          {f} <span class="opacity-50 ml-1">{counts[f]}</span>
-        </a>
-      ))}
+    <div class="flex gap-1 bg-wire border border-dim rounded-lg p-1 w-fit flex-shrink-0" id="filter-tabs">
+      <a href="/app/tasks?status=all" data-status="all" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">all <span class="opacity-50 ml-1" data-count="all">—</span></a>
+      <a href="/app/tasks?status=success" data-status="success" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">success <span class="opacity-50 ml-1" data-count="success">—</span></a>
+      <a href="/app/tasks?status=running" data-status="running" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">running <span class="opacity-50 ml-1" data-count="running">—</span></a>
+      <a href="/app/tasks?status=failed" data-status="failed" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">failed <span class="opacity-50 ml-1" data-count="failed">—</span></a>
+      <a href="/app/tasks?status=pending" data-status="pending" class="filter-tab px-3 py-1.5 rounded text-xs font-mono transition-all text-muted hover:text-white">pending <span class="opacity-50 ml-1" data-count="pending">—</span></a>
     </div>
 
-    <!-- Table (SSR) -->
+    <!-- Table -->
     <div class="bg-wire border border-dim rounded-xl overflow-hidden flex-1 overflow-y-auto">
       <div class="grid grid-cols-[80px_1fr_110px_90px_100px_44px] px-5 py-3 border-b border-dim text-[10px] uppercase tracking-widest text-muted sticky top-0 bg-wire z-10">
         <span>ID</span><span>Description</span><span>Agent</span><span>Duration</span><span>Status</span><span></span>
       </div>
-      {filtered.length === 0 && (
-        <div class="px-5 py-10 text-center text-muted text-sm">No {filter} tasks.</div>
-      )}
-      {filtered.map(t => (
-        <div class="grid grid-cols-[80px_1fr_110px_90px_100px_44px] px-5 py-3.5 border-b border-dim/50 text-sm hover:bg-dim/30 transition-colors group">
-          <span class="text-muted/60 font-mono text-xs self-center">{t.id}</span>
-          <span class="text-white text-xs truncate pr-4 self-center">{t.description}</span>
-          <span class="text-muted text-xs self-center font-mono">{t.agent}</span>
-          <span class="text-muted text-xs self-center font-mono">{t.duration ?? '—'}</span>
-          <span class="self-center"><span class={STATUS_CLASS[t.status]}>{t.status}</span></span>
-          <span class="self-center">
-            <button class="delete-btn text-muted hover:text-accent2 text-xs p-1 transition-colors" data-id={t.id}>✕</button>
-          </span>
-        </div>
-      ))}
+      <div id="task-table-body">
+        <div class="px-5 py-10 text-center text-muted text-sm">Loading tasks…</div>
+      </div>
     </div>
-
-    <!-- Error detail panel (populated client-side on click) -->
-    <div id="detail-panel" class="hidden bg-wire border border-dim rounded-xl p-5 text-xs font-mono text-muted"></div>
   </div>
 
   <script>
-    // Delete buttons
-    document.querySelectorAll('.delete-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const el = btn as HTMLElement;
-        const id = el.dataset.id!;
-        const row = el.closest('.grid') as HTMLElement;
-        el.textContent = '⟳';
-        el.classList.add('animate-spin','pointer-events-none');
-        try {
-          await fetch(`/api/tasks/${id}`, { method:'DELETE' });
-          if (row) { row.style.opacity='0'; row.style.transition='opacity .3s'; setTimeout(()=>row.remove(),300); }
-        } catch {
-          el.textContent = '✕';
-          el.classList.remove('animate-spin','pointer-events-none');
-        }
-      });
+    const STATUS_CLASS: Record<string,string> = {
+      success:'badge badge-success', running:'badge badge-running',
+      failed:'badge badge-failed', pending:'badge badge-pending',
+      awaiting_ai:'badge badge-running',
+    };
+
+    const params = new URLSearchParams(location.search);
+    const filter = params.get('status') ?? 'all';
+
+    // Highlight active tab
+    document.querySelectorAll('.filter-tab').forEach(el => {
+      if (el.getAttribute('data-status') === filter) el.classList.add('bg-dim', 'text-white');
     });
 
-    // Auto-refresh when WS fires task events
+    function esc(s: string) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    function bindDeleteButtons() {
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const el = btn as HTMLElement;
+          const id = el.dataset.id!;
+          const row = el.closest('.grid') as HTMLElement;
+          el.textContent = '⟳';
+          el.classList.add('animate-spin','pointer-events-none');
+          try {
+            await fetch(`/api/tasks/${id}`, { method:'DELETE' });
+            if (row) { row.style.opacity='0'; row.style.transition='opacity .3s'; setTimeout(()=>{ row.remove(); loadTasks(); },300); }
+          } catch {
+            el.textContent = '✕';
+            el.classList.remove('animate-spin','pointer-events-none');
+          }
+        });
+      });
+    }
+
+    async function loadTasks() {
+      try {
+        const r = await fetch('/api/tasks');
+        const { tasks } = await r.json();
+        const filtered = filter === 'all' ? tasks : tasks.filter((t:any) => t.status === filter);
+
+        // Update counts
+        const counts: Record<string,number> = { all: tasks.length, success:0, running:0, failed:0, pending:0 };
+        tasks.forEach((t:any) => { if (counts[t.status] !== undefined) counts[t.status]++; });
+        document.querySelectorAll('[data-count]').forEach(el => {
+          const key = el.getAttribute('data-count')!;
+          if (counts[key] !== undefined) el.textContent = String(counts[key]);
+        });
+
+        const tbody = document.getElementById('task-table-body')!;
+        if (filtered.length === 0) {
+          tbody.innerHTML = `<div class="px-5 py-10 text-center text-muted text-sm">No ${filter} tasks.</div>`;
+          return;
+        }
+        tbody.innerHTML = filtered.map((t:any) => `
+          <div class="grid grid-cols-[80px_1fr_110px_90px_100px_44px] px-5 py-3.5 border-b border-dim/50 text-sm hover:bg-dim/30 transition-colors group">
+            <span class="text-muted/60 font-mono text-xs self-center">${esc(t.id)}</span>
+            <span class="text-white text-xs truncate pr-4 self-center">${esc(t.description)}</span>
+            <span class="text-muted text-xs self-center font-mono">${esc(t.agent)}</span>
+            <span class="text-muted text-xs self-center font-mono">${t.duration ?? '—'}</span>
+            <span class="self-center"><span class="${STATUS_CLASS[t.status] ?? 'badge'}">${esc(t.status)}</span></span>
+            <span class="self-center"><button class="delete-btn text-muted hover:text-accent2 text-xs p-1 transition-colors" data-id="${esc(t.id)}">✕</button></span>
+          </div>`).join('');
+        bindDeleteButtons();
+      } catch {
+        document.getElementById('task-table-body')!.innerHTML =
+          '<div class="px-5 py-10 text-center text-muted text-sm">Cannot connect to API server.</div>';
+      }
+    }
+
+    document.getElementById('refresh-btn')!.onclick = () => loadTasks();
+    loadTasks();
+
     (window as any).__aq_ws_listeners ??= new Set();
     (window as any).__aq_ws_listeners.add((msg: any) => {
       if (['task_created','task_updated','task_result','task_deleted'].includes(msg.type)) {
         clearTimeout((window as any).__taskRefresh);
-        (window as any).__taskRefresh = setTimeout(() => location.reload(), 3000);
+        (window as any).__taskRefresh = setTimeout(loadTasks, 500);
       }
     });
   </script>

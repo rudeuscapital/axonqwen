@@ -4,7 +4,10 @@
       "Bash(curl -s http://localhost:11434/api/tags)",
       "Bash(ollama list)",
       "Bash(npx astro check)",
-      "Bash(npx --yes playwright --version)"
+      "Bash(npx --yes playwright --version)",
+      "Bash(npx astro build)",
+      "Bash(timeout 5 npx tsx server/index.ts)",
+      "Bash(netstat -ano)"
     ]
   }
 }

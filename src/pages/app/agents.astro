@@ -1,9 +1,6 @@
 ---
-// src/pages/app/agents.astro — SSR
+// src/pages/app/agents.astro — CSR
 import AppLayout from '../../layouts/AppLayout.astro';
-import { tasks as taskStore } from '../../lib/server';
-
-const allTasks = Array.from(taskStore.values());
 
 const agentDefs = [
   { id:'browser-rpa', name:'Browser RPA',    icon:'⬟', color:'accent',  href:'/app/browser', desc:'Playwright-powered browser automation with Qwen3.5 vision' },
@@ -28,10 +25,7 @@ const BORDER: Record<string,string> = {
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
       {agentDefs.map(agent => {
-        const agentTasks   = allTasks.filter(t => t.agent === agent.id);
-        const successCount = agentTasks.filter(t => t.status === 'success').length;
-        const rate = agentTasks.length > 0 ? Math.round(successCount / agentTasks.length * 100) : 0;
-        const c    = BORDER[agent.color];
+        const c = BORDER[agent.color];
         return (
           <div class="bg-wire border border-dim rounded-xl p-6 hover:border-dim/80 transition-all relative overflow-hidden group">
             <div class="absolute inset-0 dark-grid-bg opacity-20 rounded-xl"></div>
@@ -45,9 +39,8 @@ const BORDER: Record<string,string> = {
               </div>
               <h3 class="font-display font-bold text-white text-lg mb-2">{agent.name}</h3>
               <p class="text-muted text-xs leading-relaxed mb-5">{agent.desc}</p>
-              <div class="flex items-center justify-between text-xs mb-4 text-muted">
-                <span>{agentTasks.length} tasks · {successCount} ok</span>
-                {agentTasks.length > 0 && <span class="text-green">{rate}% success</span>}
+              <div class="flex items-center justify-between text-xs mb-4 text-muted" id={`agent-stats-${agent.id}`}>
+                <span>— tasks</span>
               </div>
               <a href={agent.href} class={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-mono border transition-all ${c} hover:opacity-80`}>
                 Open Agent →
@@ -58,4 +51,20 @@ const BORDER: Record<string,string> = {
       })}
     </div>
   </div>
+  <script>
+    const AGENTS = ['browser-rpa','scraper','vision','monitor','chat'];
+    fetch('/api/tasks').then(r => r.json()).then(({ tasks }) => {
+      AGENTS.forEach(id => {
+        const agentTasks = tasks.filter((t:any) => t.agent === id);
+        const success = agentTasks.filter((t:any) => t.status === 'success').length;
+        const rate = agentTasks.length > 0 ? Math.round(success / agentTasks.length * 100) : 0;
+        const el = document.getElementById(`agent-stats-${id}`);
+        if (el) {
+          let html = `<span>${agentTasks.length} tasks · ${success} ok</span>`;
+          if (agentTasks.length > 0) html += `<span class="text-green">${rate}% success</span>`;
+          el.innerHTML = html;
+        }
+      });
+    }).catch(() => {});
+  </script>
 </AppLayout>

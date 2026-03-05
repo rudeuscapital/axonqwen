@@ -2,18 +2,20 @@
   "name": "axonqwen",
   "type": "module",
   "version": "1.0.0",
-  "description": "AxonQwen — Enterprise AI Automation Platform (Astro SSR + React)",
+  "description": "AxonQwen — Enterprise AI Automation Platform (Astro Static + Express API)",
   "scripts": {
-    "dev":     "astro dev",
-    "build":   "astro build",
-    "preview": "astro preview",
-    "start":   "node dist/server/entry.mjs"
+    "dev":        "concurrently -n astro,api -c cyan,green \"astro dev\" \"tsx watch server/index.ts\"",
+    "dev:astro":  "astro dev",
+    "dev:server": "tsx watch server/index.ts",
+    "build":      "astro build",
+    "start":      "NODE_ENV=production tsx server/index.ts"
   },
   "dependencies": {
-    "@astrojs/node":     "^8.3.0",
     "@astrojs/react":    "^3.6.0",
     "@astrojs/tailwind": "^5.1.0",
     "astro":             "^4.16.0",
+    "cors":              "^2.8.5",
+    "express":           "^4.21.0",
     "react":             "^18.3.1",
     "react-dom":         "^18.3.1",
     "tailwindcss":       "^3.4.0",
@@ -22,9 +24,13 @@
     "ws":                "^8.14.0"
   },
   "devDependencies": {
+    "@types/cors":         "^2.8.0",
+    "@types/express":      "^4.17.0",
     "@types/react":        "^18.3.0",
     "@types/react-dom":    "^18.3.0",
     "@types/ws":           "^8.5.0",
+    "concurrently":        "^9.0.0",
+    "tsx":                 "^4.19.0",
     "typescript":          "^5.5.0"
   }
 }

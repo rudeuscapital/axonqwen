@@ -1,25 +1,24 @@
 // astro.config.mjs
 import { defineConfig } from 'astro/config';
-import node    from '@astrojs/node';
 import react   from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 
 export default defineConfig({
-  output: 'server',            // SSR — all pages rendered on the server
-  adapter: node({
-    mode: 'standalone',        // Outputs a self-contained Node.js server
-  }),
+  output: 'static',
   integrations: [
     react(),
     tailwind({ applyBaseStyles: false }),
   ],
   server: {
     port: 4321,
-    host:  true,
+    host: true,
   },
   vite: {
-    ssr: {
-      noExternal: [],
+    server: {
+      proxy: {
+        '/api': { target: 'http://localhost:3000', changeOrigin: true },
+        '/_ws': { target: 'ws://localhost:3000', ws: true },
+      },
     },
   },
 });

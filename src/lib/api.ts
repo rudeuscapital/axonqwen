@@ -1,7 +1,7 @@
 // ─── API & WebSocket client for AxonQwen frontend ───────────
 
-export const API_BASE = 'http://localhost:3000';
-export const WS_URL   = 'ws://localhost:3000';
+export const API_BASE = '';
+export const WS_URL   = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/_ws`;
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -127,7 +127,8 @@ let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 function connectWS() {
   if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
   try {
-    ws = new WebSocket(WS_URL);
+    const wsUrl = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${location.host}/_ws`;
+    ws = new WebSocket(wsUrl);
     ws.onopen = () => {
       if (reconnectTimer) { clearTimeout(reconnectTimer); reconnectTimer = null; }
     };

@@ -1,11 +1,11 @@
 /**
- * src/lib/server.ts
+ * server/store.ts
  * ──────────────────────────────────────────────────────────────
- * Server-side singleton module.
- * Runs only in Node.js (Astro SSR / API routes).
- * Exports: task store, WebSocket broadcaster.
+ * Server-side singleton module for Express API server.
+ * Exports: task store, monitor store, WebSocket broadcaster.
  * ──────────────────────────────────────────────────────────────
  */
+import type { WebSocket } from 'ws';
 
 // ── Types ──────────────────────────────────────────────────────
 export type TaskStatus = 'pending' | 'running' | 'awaiting_ai' | 'success' | 'failed';
@@ -33,19 +33,19 @@ export interface Monitor {
 // ── In-memory stores ───────────────────────────────────────────
 // Declared on `globalThis` so hot-reload keeps state in dev mode
 declare global {
-  var __aq_tasks:    Map<string, Task>    | undefined;
-  var __aq_monitors: Map<string, Monitor> | undefined;
-  var __aq_seq:      number               | undefined;
-  var __aq_ws_clients: Set<import('ws').WebSocket> | undefined;
+  var __aq_tasks:      Map<string, Task>    | undefined;
+  var __aq_monitors:   Map<string, Monitor> | undefined;
+  var __aq_seq:        number               | undefined;
+  var __aq_ws_clients: Set<WebSocket>       | undefined;
 }
 
-globalThis.__aq_tasks    ??= new Map<string, Task>();
-globalThis.__aq_monitors ??= new Map<string, Monitor>();
-globalThis.__aq_seq      ??= 100;
+globalThis.__aq_tasks      ??= new Map<string, Task>();
+globalThis.__aq_monitors   ??= new Map<string, Monitor>();
+globalThis.__aq_seq        ??= 100;
 globalThis.__aq_ws_clients ??= new Set();
 
-export const tasks    = globalThis.__aq_tasks!;
-export const monitors = globalThis.__aq_monitors!;
+export const tasks     = globalThis.__aq_tasks!;
+export const monitors  = globalThis.__aq_monitors!;
 export const wsClients = globalThis.__aq_ws_clients!;
 
 // ── WebSocket broadcast ────────────────────────────────────────
@@ -95,4 +95,3 @@ export function updateTask(id: string, patch: Partial<Task>): Task | null {
 export function elapsed(t0: number): string {
   return ((Date.now() - t0) / 1000).toFixed(1) + 's';
 }
-

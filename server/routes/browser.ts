@@ -1,25 +1,20 @@
-// src/pages/api/browser/run.ts
-import type { APIRoute } from 'astro';
-import { createTask, updateTask, elapsed, log, broadcast } from '../../../lib/server';
+import { Router } from 'express';
+import { createTask, updateTask, elapsed, log, broadcast } from '../store.js';
 
-export const POST: APIRoute = async ({ request }) => {
-  let body: any;
-  try { body = await request.json(); } catch {
-    return Response.json({ error: 'Invalid JSON body' }, { status: 400 });
-  }
+const router = Router();
 
-  const { url, instruction, headless = true } = body;
+router.post('/api/browser/run', (req, res) => {
+  const { url, instruction, headless = true } = req.body;
   if (!url || !instruction) {
-    return Response.json({ error: 'url and instruction are required' }, { status: 400 });
+    return res.status(400).json({ error: 'url and instruction are required' });
   }
 
   const task = createTask(`Browser RPA: ${instruction.slice(0, 60)}`, 'browser-rpa');
   updateTask(task.id, { status: 'running' });
   const t0 = Date.now();
 
-  const resp = Response.json({ taskId: task.id, status: 'running' });
+  res.json({ taskId: task.id, status: 'running' });
 
-  // Run Playwright in background (setTimeout avoids setImmediate compatibility issues)
   setTimeout(async () => {
     let browser: import('playwright').Browser | null = null;
     try {
@@ -48,23 +43,15 @@ export const POST: APIRoute = async ({ request }) => {
       );
 
       const dur = elapsed(t0);
-      // Don't include screenshot in updateTask to avoid bloating the WS broadcast
       updateTask(task.id, {
-        status:   'awaiting_ai',
-        duration: dur,
-        result:   { pageTitle: title, url },
+        status: 'awaiting_ai', duration: dur,
+        result: { pageTitle: title, url },
       });
       broadcast({
-        type: 'browser_data_ready',
-        taskId: task.id,
-        screenshot: b64,
-        pageText,
-        pageTitle: title,
-        url,
-        instruction,
+        type: 'browser_data_ready', taskId: task.id,
+        screenshot: b64, pageText, pageTitle: title, url, instruction,
       });
       log('OK', `[${task.id}] Page captured in ${dur} — awaiting client-side AI analysis`);
-
     } catch (err: any) {
       const dur = elapsed(t0);
       updateTask(task.id, { status: 'failed', duration: dur, error: err.message });
@@ -73,6 +60,6 @@ export const POST: APIRoute = async ({ request }) => {
       if (browser) { try { await browser.close(); } catch {} }
     }
   }, 0);
+});
 
-  return resp;
-};
+export default router;

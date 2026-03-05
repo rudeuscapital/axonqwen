@@ -1,34 +1,6 @@
 ---
-// src/pages/app/index.astro  — SSR Dashboard
+// src/pages/app/index.astro — CSR Dashboard
 import AppLayout from '../../layouts/AppLayout.astro';
-import { tasks as taskStore } from '../../lib/server';
-
-// Server-side data fetch on every request
-const allTasks = Array.from(taskStore.values()).sort((a, b) => b.id.localeCompare(a.id));
-const recent   = allTasks.slice(0, 10);
-
-const stats = {
-  total:   allTasks.length,
-  success: allTasks.filter(t => t.status === 'success').length,
-  failed:  allTasks.filter(t => t.status === 'failed').length,
-  running: allTasks.filter(t => t.status === 'running').length,
-};
-const rate = stats.total > 0 ? Math.round((stats.success / stats.total) * 100) : 0;
-
-const STATUS_CLASS: Record<string, string> = {
-  success: 'badge badge-success',
-  running: 'badge badge-running',
-  failed:  'badge badge-failed',
-  pending: 'badge badge-pending',
-};
-
-function relTime(iso: string): string {
-  const d = Date.now() - new Date(iso).getTime();
-  if (d < 60_000)     return 'just now';
-  if (d < 3_600_000)  return Math.floor(d / 60_000) + 'm ago';
-  if (d < 86_400_000) return Math.floor(d / 3_600_000) + 'h ago';
-  return Math.floor(d / 86_400_000) + 'd ago';
-}
 ---
 
 <AppLayout title="Dashboard" active="dashboard">
@@ -36,48 +8,52 @@ function relTime(iso: string): string {
 
     <!-- Stat cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {[
-        { label:'Total Tasks',   value: stats.total,          sub: `${stats.running} running`, color:'text-accent'  },
-        { label:'Success Rate',  value: `${rate}%`,           sub: `${stats.success} passed`,  color:'text-green'   },
-        { label:'Failed Tasks',  value: stats.failed,         sub: 'needs attention',           color:'text-accent2' },
-        { label:'Ollama Status', value: 'Checking…', sub: 'local',     color: 'text-muted' },
-      ].map(s => (
-        <div class="stat-card">
-          <div class="absolute inset-0 dark-grid-bg opacity-20 rounded-xl"></div>
-          <div class="relative z-10">
-            <p class="text-[10px] text-muted uppercase tracking-widest mb-3">{s.label}</p>
-            <p class={`font-display font-extrabold text-4xl leading-none mb-1 ${s.color}`}>{s.value}</p>
-            <p class="text-xs text-muted mt-2">{s.sub}</p>
-          </div>
+      <div class="stat-card">
+        <div class="absolute inset-0 dark-grid-bg opacity-20 rounded-xl"></div>
+        <div class="relative z-10">
+          <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Total Tasks</p>
+          <p class="font-display font-extrabold text-4xl leading-none mb-1 text-accent" id="stat-total">—</p>
+          <p class="text-xs text-muted mt-2" id="stat-running">loading…</p>
         </div>
-      ))}
+      </div>
+      <div class="stat-card">
+        <div class="absolute inset-0 dark-grid-bg opacity-20 rounded-xl"></div>
+        <div class="relative z-10">
+          <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Success Rate</p>
+          <p class="font-display font-extrabold text-4xl leading-none mb-1 text-green" id="stat-rate">—</p>
+          <p class="text-xs text-muted mt-2" id="stat-passed">loading…</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="absolute inset-0 dark-grid-bg opacity-20 rounded-xl"></div>
+        <div class="relative z-10">
+          <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Failed Tasks</p>
+          <p class="font-display font-extrabold text-4xl leading-none mb-1 text-accent2" id="stat-failed">—</p>
+          <p class="text-xs text-muted mt-2">needs attention</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="absolute inset-0 dark-grid-bg opacity-20 rounded-xl"></div>
+        <div class="relative z-10">
+          <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Ollama Status</p>
+          <p class="font-display font-extrabold text-4xl leading-none mb-1 text-muted animate-pulse" id="stat-ollama">Checking…</p>
+          <p class="text-xs text-muted mt-2" id="stat-ollama-sub">local</p>
+        </div>
+      </div>
     </div>
 
     <!-- Tasks table + live log -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <!-- Recent Tasks (SSR) -->
       <div class="lg:col-span-2 bg-wire border border-dim rounded-xl overflow-hidden">
         <div class="flex items-center justify-between px-5 py-4 border-b border-dim">
           <h2 class="font-display font-bold text-sm text-white">Recent Tasks</h2>
           <a href="/app/tasks" class="text-xs text-muted hover:text-accent transition-colors">View all →</a>
         </div>
-        {recent.length === 0 ? (
-          <div class="px-5 py-8 text-center text-muted text-sm">No tasks yet — run an agent to get started.</div>
-        ) : (
-          <div id="task-list">
-            {recent.map(t => (
-              <div class="task-row">
-                <span class="text-[11px] text-muted/60 font-mono w-16 flex-shrink-0">{t.id}</span>
-                <span class="flex-1 text-white text-xs truncate">{t.description}</span>
-                <span class="text-[10px] text-muted flex-shrink-0 hidden md:block">{relTime(t.startedAt)}</span>
-                <span class={STATUS_CLASS[t.status] + ' flex-shrink-0'}>{t.status}</span>
-              </div>
-            ))}
-          </div>
-        )}
+        <div id="task-list">
+          <div class="px-5 py-8 text-center text-muted text-sm">Loading tasks…</div>
+        </div>
       </div>
 
-      <!-- Live activity (updates via WS client-side) -->
       <div class="bg-wire border border-dim rounded-xl overflow-hidden">
         <div class="px-5 py-4 border-b border-dim flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-green animate-pulse-dot"></span>
@@ -93,26 +69,68 @@ function relTime(iso: string): string {
     <div class="bg-wire border border-dim rounded-xl p-6">
       <h2 class="font-display font-bold text-sm text-white mb-4">Quick Actions</h2>
       <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {[
-          {href:'/app/chat',    label:'Chat Agent',  icon:'◈'},
-          {href:'/app/browser', label:'Browser RPA', icon:'⬟'},
-          {href:'/app/scraper', label:'Scraper',     icon:'◉'},
-          {href:'/app/vision',  label:'Vision',      icon:'◑'},
-          {href:'/app/monitor', label:'Monitor',     icon:'⊕'},
-        ].map(a => (
-          <a href={a.href} class="flex items-center gap-2 px-4 py-3 rounded-lg bg-dim hover:bg-[#1a2038] border border-dim hover:border-accent/20 transition-all group">
-            <span class="text-lg group-hover:text-accent transition-colors">{a.icon}</span>
-            <span class="text-[13px] text-muted group-hover:text-white">{a.label}</span>
-          </a>
-        ))}
+        <a href="/app/chat" class="flex items-center gap-2 px-4 py-3 rounded-lg bg-dim hover:bg-[#1a2038] border border-dim hover:border-accent/20 transition-all group"><span class="text-lg group-hover:text-accent transition-colors">◈</span><span class="text-[13px] text-muted group-hover:text-white">Chat Agent</span></a>
+        <a href="/app/browser" class="flex items-center gap-2 px-4 py-3 rounded-lg bg-dim hover:bg-[#1a2038] border border-dim hover:border-accent/20 transition-all group"><span class="text-lg group-hover:text-accent transition-colors">⬟</span><span class="text-[13px] text-muted group-hover:text-white">Browser RPA</span></a>
+        <a href="/app/scraper" class="flex items-center gap-2 px-4 py-3 rounded-lg bg-dim hover:bg-[#1a2038] border border-dim hover:border-accent/20 transition-all group"><span class="text-lg group-hover:text-accent transition-colors">◉</span><span class="text-[13px] text-muted group-hover:text-white">Scraper</span></a>
+        <a href="/app/vision" class="flex items-center gap-2 px-4 py-3 rounded-lg bg-dim hover:bg-[#1a2038] border border-dim hover:border-accent/20 transition-all group"><span class="text-lg group-hover:text-accent transition-colors">◑</span><span class="text-[13px] text-muted group-hover:text-white">Vision</span></a>
+        <a href="/app/monitor" class="flex items-center gap-2 px-4 py-3 rounded-lg bg-dim hover:bg-[#1a2038] border border-dim hover:border-accent/20 transition-all group"><span class="text-lg group-hover:text-accent transition-colors">⊕</span><span class="text-[13px] text-muted group-hover:text-white">Monitor</span></a>
       </div>
     </div>
   </div>
 
-  <!-- Client-side WS live updates (minimal JS) -->
   <script>
     const logEl = document.getElementById('live-log')!;
-    const taskListEl = document.getElementById('task-list');
+    const STATUS_CLASS: Record<string,string> = {
+      success:'badge badge-success', running:'badge badge-running',
+      failed:'badge badge-failed', pending:'badge badge-pending',
+      awaiting_ai:'badge badge-running',
+    };
+
+    function relTime(iso: string): string {
+      const d = Date.now() - new Date(iso).getTime();
+      if (d < 60_000)     return 'just now';
+      if (d < 3_600_000)  return Math.floor(d / 60_000) + 'm ago';
+      if (d < 86_400_000) return Math.floor(d / 3_600_000) + 'h ago';
+      return Math.floor(d / 86_400_000) + 'd ago';
+    }
+
+    function esc(s: string) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    async function loadDashboard() {
+      try {
+        const r = await fetch('/api/tasks');
+        const { tasks } = await r.json();
+        const recent = tasks.slice(0, 10);
+        const total = tasks.length;
+        const success = tasks.filter((t:any) => t.status === 'success').length;
+        const failed = tasks.filter((t:any) => t.status === 'failed').length;
+        const running = tasks.filter((t:any) => t.status === 'running').length;
+        const rate = total > 0 ? Math.round((success / total) * 100) : 0;
+
+        const el = (id: string) => document.getElementById(id);
+        el('stat-total')!.textContent = String(total);
+        el('stat-running')!.textContent = `${running} running`;
+        el('stat-rate')!.textContent = `${rate}%`;
+        el('stat-passed')!.textContent = `${success} passed`;
+        el('stat-failed')!.textContent = String(failed);
+
+        const taskList = el('task-list')!;
+        if (recent.length === 0) {
+          taskList.innerHTML = '<div class="px-5 py-8 text-center text-muted text-sm">No tasks yet — run an agent to get started.</div>';
+        } else {
+          taskList.innerHTML = recent.map((t:any) => `
+            <div class="task-row">
+              <span class="text-[11px] text-muted/60 font-mono w-16 flex-shrink-0">${esc(t.id)}</span>
+              <span class="flex-1 text-white text-xs truncate">${esc(t.description)}</span>
+              <span class="text-[10px] text-muted flex-shrink-0 hidden md:block">${relTime(t.startedAt)}</span>
+              <span class="${STATUS_CLASS[t.status] || 'badge'} flex-shrink-0">${esc(t.status)}</span>
+            </div>`).join('');
+        }
+      } catch {
+        document.getElementById('task-list')!.innerHTML =
+          '<div class="px-5 py-8 text-center text-muted text-sm">Cannot connect to API server.</div>';
+      }
+    }
 
     function addLog(msg: any) {
       const colors: Record<string,string> = {INFO:'text-[#9ab0c8]',OK:'text-green-400',WARN:'text-yellow-400',ERROR:'text-red-400'};
@@ -127,27 +145,18 @@ function relTime(iso: string): string {
     function onWS(msg: any) {
       if (msg.type === 'log') addLog(msg);
       if (['task_created','task_updated','task_result'].includes(msg.type)) {
-        // Soft reload the task list section only
-        fetch('/app?_fragment=tasks').catch(()=>{});
-        // For simplicity just reload the task section via full page reload every 5 s max
         clearTimeout((window as any).__reloadTimer);
-        (window as any).__reloadTimer = setTimeout(() => location.reload(), 5000);
+        (window as any).__reloadTimer = setTimeout(loadDashboard, 500);
       }
     }
 
-    // Subscribe via shared WS from AppLayout
     (window as any).__aq_ws_listeners ??= new Set();
     (window as any).__aq_ws_listeners.add(onWS);
 
-    // Check user's local Ollama for the status card
+    // Ollama status card
     (async function() {
-      const cards = document.querySelectorAll('.stat-card');
-      const ollamaCard = cards[3]; // 4th card = Ollama Status
-      if (!ollamaCard) return;
-      const valueEl = ollamaCard.querySelector('.font-display.font-extrabold') as HTMLElement;
-      const subEl   = ollamaCard.querySelector('.text-xs.text-muted') as HTMLElement;
-      // Show loading animation
-      if (valueEl) { valueEl.classList.add('animate-pulse'); }
+      const valueEl = document.getElementById('stat-ollama')!;
+      const subEl = document.getElementById('stat-ollama-sub')!;
       let settings: any = {};
       try { settings = JSON.parse(localStorage.getItem('axonqwen-settings') || '{}'); } catch {}
       const url = settings.ollamaUrl || 'http://localhost:11434';
@@ -156,12 +165,14 @@ function relTime(iso: string): string {
         if (!r.ok) throw new Error();
         const data = await r.json();
         const model = data.models?.[0]?.name?.split(':')[0] || settings.model || 'qwen3.5';
-        if (valueEl) { valueEl.textContent = 'Online'; valueEl.className = 'font-display font-extrabold text-4xl leading-none mb-1 text-green'; }
-        if (subEl)   { subEl.textContent = model; }
+        valueEl.textContent = 'Online'; valueEl.className = 'font-display font-extrabold text-4xl leading-none mb-1 text-green';
+        subEl.textContent = model;
       } catch {
-        if (valueEl) { valueEl.textContent = 'Offline'; valueEl.className = 'font-display font-extrabold text-4xl leading-none mb-1 text-accent2'; }
-        if (subEl)   { subEl.textContent = 'not connected'; }
+        valueEl.textContent = 'Offline'; valueEl.className = 'font-display font-extrabold text-4xl leading-none mb-1 text-accent2';
+        subEl.textContent = 'not connected';
       }
     })();
+
+    loadDashboard();
   </script>
 </AppLayout>
