@@ -74,13 +74,6 @@ import Base from '../layouts/Base.astro';
         </div>
       </div>
 
-      <!-- Network info (for EVM) -->
-      <div id="network-info" class="hidden mt-4 px-4 py-3 rounded-lg bg-wire border border-dim">
-        <div class="flex items-center justify-between">
-          <span class="text-[11px] text-muted font-mono">Network</span>
-          <span id="network-name" class="text-[11px] text-accent font-mono font-bold"></span>
-        </div>
-      </div>
 
       <!-- Supported networks -->
       <div class="mt-10 pt-8 border-t border-dim">
@@ -140,7 +133,7 @@ import Base from '../layouts/Base.astro';
   </style>
 
   <script>
-    import { getSession, connectWallet, getEVMChainInfo, type ChainType } from '../lib/wallet-auth';
+    import { getSession, connectWallet, type ChainType } from '../lib/wallet-auth';
 
     // If already logged in, redirect to app
     const session = getSession();
@@ -151,8 +144,6 @@ import Base from '../layouts/Base.astro';
     const statusEl   = document.getElementById('login-status')!;
     const loadingEl  = document.getElementById('login-loading')!;
     const loadingTxt = document.getElementById('loading-text')!;
-    const networkEl  = document.getElementById('network-info')!;
-    const networkName = document.getElementById('network-name')!;
     const buttons    = document.querySelectorAll<HTMLButtonElement>('.wallet-btn');
 
     function showStatus(msg: string, type: 'success' | 'error') {
@@ -192,15 +183,8 @@ import Base from '../layouts/Base.astro';
         label.textContent = 'TON Wallet (Not Detected)';
       }
 
-      // Show current EVM network if available
+      // Listen for EVM chain changes
       if (hasEVM) {
-        const chain = await getEVMChainInfo();
-        if (chain) {
-          networkEl.className = 'mt-4 px-4 py-3 rounded-lg bg-wire border border-dim';
-          networkName.textContent = chain.name;
-        }
-
-        // Listen for chain changes
         w.ethereum.on?.('chainChanged', () => {
           window.location.reload();
         });
