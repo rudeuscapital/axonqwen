@@ -46,7 +46,7 @@ const steps = [
       Axon<span class="text-accent">Qwen</span>
     </a>
     <div class="hidden md:flex items-center gap-8">
-      {[['features','#features'],['agents','#agents'],['docs','#docs'],['start','#quickstart'],['models','#models']].map(([l,h])=>(
+      {[['features','#features'],['agents','#agents'],['usage','#usage'],['docs','#docs'],['roadmap','#roadmap']].map(([l,h])=>(
         <a href={h} class="text-xs text-muted uppercase tracking-widest hover:text-ink transition-colors">{l}</a>
       ))}
     </div>
@@ -149,6 +149,239 @@ const steps = [
             </div>
           </div>
         ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW TO USE -->
+  <section class="bg-ink py-28 px-12" id="usage">
+    <div class="max-w-5xl mx-auto">
+      <p class="text-gold text-[10px] uppercase tracking-[.16em] mb-4 reveal">How to Use</p>
+      <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-6 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Complete Usage Guide.</h2>
+      <p class="text-muted text-sm leading-relaxed max-w-lg mb-16 reveal delay-200">Learn how to use each agent to automate your workflows. Every agent is accessible from the dashboard at <code class="text-accent">axonqwen.xyz/app</code>.</p>
+
+      <div class="space-y-6 reveal delay-300">
+        <!-- Chat Agent -->
+        <details class="group border border-dim rounded-xl overflow-hidden bg-wire">
+          <summary class="flex items-center gap-4 px-8 py-6 cursor-pointer hover:bg-[#1a2038] transition-colors">
+            <span class="text-2xl">&#x25C8;</span>
+            <div class="flex-1">
+              <h3 class="font-display font-bold text-white text-lg">Chat Agent</h3>
+              <p class="text-muted text-xs mt-1">Conversational AI with streaming responses</p>
+            </div>
+            <span class="text-muted text-xs group-open:rotate-90 transition-transform">&#x25B6;</span>
+          </summary>
+          <div class="px-8 pb-8 border-t border-dim">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div class="space-y-4">
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">1.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Open <code class="text-accent text-xs">Chat Agent</code> from the sidebar or go to <code class="text-accent text-xs">/app/chat</code></p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">2.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Type your message in the input box. Press <code class="text-accent text-xs">Enter</code> to send, <code class="text-accent text-xs">Shift+Enter</code> for new line</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">3.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">AI will stream the response in real-time with thinking process visible</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">4.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Adjust model, temperature, and system prompt from the Settings sidebar</p>
+                </div>
+              </div>
+              <div class="bg-ink rounded-xl p-5">
+                <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Quick Actions</p>
+                <div class="space-y-2 text-xs font-mono text-[#9ab0c8]">
+                  <p>&gt; List the steps to scrape a product page</p>
+                  <p>&gt; Write a Playwright script to fill a login form</p>
+                  <p>&gt; Extract all tables from a URL as JSON</p>
+                  <p>&gt; Write automation to monitor price changes</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <!-- Browser RPA -->
+        <details class="group border border-dim rounded-xl overflow-hidden bg-wire">
+          <summary class="flex items-center gap-4 px-8 py-6 cursor-pointer hover:bg-[#1a2038] transition-colors">
+            <span class="text-2xl">&#x2B1F;</span>
+            <div class="flex-1">
+              <h3 class="font-display font-bold text-white text-lg">Browser RPA</h3>
+              <p class="text-muted text-xs mt-1">Automate any website with natural language</p>
+            </div>
+            <span class="text-muted text-xs group-open:rotate-90 transition-transform">&#x25B6;</span>
+          </summary>
+          <div class="px-8 pb-8 border-t border-dim">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div class="space-y-4">
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">1.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Open <code class="text-accent text-xs">Browser RPA</code> from the sidebar</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">2.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Enter the target <strong class="text-white">URL</strong> (e.g. <code class="text-accent text-xs">https://example.com</code>)</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">3.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Describe the <strong class="text-white">instruction</strong> in natural language (e.g. "Click the login button and fill in email")</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">4.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Click <strong class="text-white">Run</strong> — Chromium will launch on the server, capture a screenshot, and AI will generate a Playwright script</p>
+                </div>
+              </div>
+              <div class="bg-ink rounded-xl p-5">
+                <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Process Flow</p>
+                <div class="space-y-2 text-xs font-mono text-[#9ab0c8]">
+                  <p class="text-accent">&#x2192; Chromium launches (headless)</p>
+                  <p class="text-accent">&#x2192; Navigates to target URL</p>
+                  <p class="text-accent">&#x2192; Takes screenshot + extracts page text</p>
+                  <p class="text-accent">&#x2192; AI analyzes screenshot + instruction</p>
+                  <p class="text-green-400">&#x2713; Generates Playwright automation script</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <!-- Scraper Agent -->
+        <details class="group border border-dim rounded-xl overflow-hidden bg-wire">
+          <summary class="flex items-center gap-4 px-8 py-6 cursor-pointer hover:bg-[#1a2038] transition-colors">
+            <span class="text-2xl">&#x25C9;</span>
+            <div class="flex-1">
+              <h3 class="font-display font-bold text-white text-lg">Scraper Agent</h3>
+              <p class="text-muted text-xs mt-1">Extract structured JSON from any website</p>
+            </div>
+            <span class="text-muted text-xs group-open:rotate-90 transition-transform">&#x25B6;</span>
+          </summary>
+          <div class="px-8 pb-8 border-t border-dim">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div class="space-y-4">
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">1.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Open <code class="text-accent text-xs">Scraper</code> from the sidebar</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">2.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Enter the <strong class="text-white">URL</strong> to scrape</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">3.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Optionally specify <strong class="text-white">fields</strong> to extract (e.g. "title, price, rating") — leave blank for all data</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">4.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Click <strong class="text-white">Run Scraper</strong> — Chromium opens the page, AI extracts clean JSON</p>
+                </div>
+              </div>
+              <div class="bg-ink rounded-xl p-5">
+                <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Example Output</p>
+                <pre class="text-xs font-mono text-[#9ab0c8] leading-relaxed">{`{
+  "source": "books.toscrape.com",
+  "title": "Books to Scrape",
+  "count": 20,
+  "data": [
+    { "title": "A Light in the Attic",
+      "price": "51.77",
+      "rating": "Three" }
+  ]
+}`}</pre>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <!-- Vision Agent -->
+        <details class="group border border-dim rounded-xl overflow-hidden bg-wire">
+          <summary class="flex items-center gap-4 px-8 py-6 cursor-pointer hover:bg-[#1a2038] transition-colors">
+            <span class="text-2xl">&#x25D1;</span>
+            <div class="flex-1">
+              <h3 class="font-display font-bold text-white text-lg">Vision Agent</h3>
+              <p class="text-muted text-xs mt-1">Extract text and data from any image</p>
+            </div>
+            <span class="text-muted text-xs group-open:rotate-90 transition-transform">&#x25B6;</span>
+          </summary>
+          <div class="px-8 pb-8 border-t border-dim">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div class="space-y-4">
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">1.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Open <code class="text-accent text-xs">Vision</code> from the sidebar</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">2.</span>
+                  <p class="text-[13px] text-muted leading-relaxed"><strong class="text-white">Drag & drop</strong> an image or click to upload (JPEG, PNG, WebP)</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">3.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Optionally add <strong class="text-white">instructions</strong> (e.g. "Get all invoice items as JSON")</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">4.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Click <strong class="text-white">Analyze Image</strong> — AI extracts all text, tables, and structured data</p>
+                </div>
+              </div>
+              <div class="bg-ink rounded-xl p-5">
+                <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Supported Inputs</p>
+                <div class="space-y-2 text-xs font-mono text-[#9ab0c8]">
+                  <p>&#x2022; Invoices & receipts</p>
+                  <p>&#x2022; Contracts & documents</p>
+                  <p>&#x2022; Screenshots & UI captures</p>
+                  <p>&#x2022; Forms & labels</p>
+                  <p>&#x2022; Tables & spreadsheets</p>
+                  <p>&#x2022; Any image with text content</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <!-- Monitor Agent -->
+        <details class="group border border-dim rounded-xl overflow-hidden bg-wire">
+          <summary class="flex items-center gap-4 px-8 py-6 cursor-pointer hover:bg-[#1a2038] transition-colors">
+            <span class="text-2xl">&#x2295;</span>
+            <div class="flex-1">
+              <h3 class="font-display font-bold text-white text-lg">Monitor Agent</h3>
+              <p class="text-muted text-xs mt-1">Watch URLs for changes with smart alerts</p>
+            </div>
+            <span class="text-muted text-xs group-open:rotate-90 transition-transform">&#x25B6;</span>
+          </summary>
+          <div class="px-8 pb-8 border-t border-dim">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              <div class="space-y-4">
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">1.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Open <code class="text-accent text-xs">Monitor</code> from the sidebar</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">2.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Enter the <strong class="text-white">URL</strong> to monitor</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">3.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Define a <strong class="text-white">trigger condition</strong> in natural language (e.g. "Price drops below $50")</p>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-accent font-bold text-sm min-w-[24px]">4.</span>
+                  <p class="text-[13px] text-muted leading-relaxed">Set the <strong class="text-white">check interval</strong> and click <strong class="text-white">Start Monitor</strong> — alerts arrive via WebSocket</p>
+                </div>
+              </div>
+              <div class="bg-ink rounded-xl p-5">
+                <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Example Conditions</p>
+                <div class="space-y-2 text-xs font-mono text-[#9ab0c8]">
+                  <p>&gt; Price drops below $100</p>
+                  <p>&gt; Stock status changes to "In Stock"</p>
+                  <p>&gt; New blog post is published</p>
+                  <p>&gt; Page content contains "sale"</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </details>
       </div>
     </div>
   </section>
@@ -296,8 +529,96 @@ ws.onmessage = ({ data }) => {
     </div>
   </section>
 
+  <!-- ROADMAP -->
+  <section class="bg-ink py-28 px-12" id="roadmap">
+    <div class="max-w-5xl mx-auto">
+      <p class="text-gold text-[10px] uppercase tracking-[.16em] mb-4 reveal">Roadmap</p>
+      <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-6 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">What's Coming Next.</h2>
+      <p class="text-muted text-sm leading-relaxed max-w-lg mb-16 reveal delay-200">
+        AxonQwen is under active development. Here's what's planned for upcoming releases.
+      </p>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 reveal delay-300">
+        <!-- Phase 1 -->
+        <div class="border border-green/20 rounded-xl overflow-hidden">
+          <div class="bg-green/10 px-6 py-4 border-b border-green/20 flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-green"></span>
+            <h3 class="font-display font-bold text-white text-sm">v1.0 — Current</h3>
+          </div>
+          <div class="p-6 space-y-3">
+            {[
+              'Chat Agent with streaming',
+              'Browser RPA (Playwright)',
+              'Scraper Agent (JSON extraction)',
+              'Vision Agent (OCR & analysis)',
+              'Monitor Agent (URL watcher)',
+              'Real-time WebSocket updates',
+              'Activity logs & progress tracking',
+              'Model selection (Qwen3.5 variants)',
+            ].map(item => (
+              <div class="flex items-center gap-3 text-[13px]">
+                <span class="text-green text-xs flex-shrink-0">&#x2713;</span>
+                <span class="text-muted">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div class="border border-accent/20 rounded-xl overflow-hidden">
+          <div class="bg-accent/10 px-6 py-4 border-b border-accent/20 flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-accent animate-pulse"></span>
+            <h3 class="font-display font-bold text-white text-sm">v1.1 — In Progress</h3>
+          </div>
+          <div class="p-6 space-y-3">
+            {[
+              'Multi-step agent workflows',
+              'Scheduled tasks (Cron)',
+              'Telegram & Slack notifications',
+              'Task history export (CSV/JSON)',
+              'Custom system prompts per agent',
+              'Batch scraping (multiple URLs)',
+              'Screenshot history & comparison',
+              'API key authentication',
+            ].map(item => (
+              <div class="flex items-center gap-3 text-[13px]">
+                <span class="text-accent text-xs flex-shrink-0">&#x25CB;</span>
+                <span class="text-muted">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div class="border border-dim rounded-xl overflow-hidden">
+          <div class="bg-wire px-6 py-4 border-b border-dim flex items-center gap-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-muted/40"></span>
+            <h3 class="font-display font-bold text-white text-sm">v2.0 — Planned</h3>
+          </div>
+          <div class="p-6 space-y-3">
+            {[
+              'Multi-user & team collaboration',
+              'Custom agent builder (low-code)',
+              'Plugin marketplace',
+              'Database integrations (Postgres, Mongo)',
+              'Webhook triggers & callbacks',
+              'PDF report generation',
+              'Agent-to-agent communication',
+              'Self-hosted deployment option',
+            ].map(item => (
+              <div class="flex items-center gap-3 text-[13px]">
+                <span class="text-muted/40 text-xs flex-shrink-0">&#x25CB;</span>
+                <span class="text-muted/60">{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- CTA -->
-  <section class="bg-ink py-40 px-12 text-center relative overflow-hidden">
+  <section class="bg-paper py-40 px-12 text-center relative overflow-hidden">
     <div class="absolute inset-0 dark-grid-bg opacity-30"></div>
     <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
       <div class="w-[600px] h-[400px] rounded-full bg-accent/5 blur-[80px]"></div>
@@ -319,7 +640,7 @@ ws.onmessage = ({ data }) => {
   <footer class="bg-[#020407] px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-dim">
     <div class="font-display font-extrabold text-white text-sm">Axon<span class="text-accent">Qwen</span></div>
     <div class="flex gap-6">
-      {[['Features','#features'],['Agents','#agents'],['Docs','#docs'],['Start','#quickstart'],['Troubleshoot','#troubleshooting'],['Dashboard','/app']].map(([l,h])=>(
+      {[['Features','#features'],['Agents','#agents'],['Usage','#usage'],['Docs','#docs'],['Roadmap','#roadmap'],['Dashboard','/app']].map(([l,h])=>(
         <a href={h} class="text-[11px] text-muted/50 hover:text-white transition-colors font-mono">{l}</a>
       ))}
     </div>
