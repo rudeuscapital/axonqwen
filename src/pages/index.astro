@@ -36,38 +36,38 @@ const steps = [
 ---
 <Base title="Home">
   <!-- Custom cursor -->
-  <div class="cursor fixed w-2.5 h-2.5 rounded-full bg-accent2 pointer-events-none z-[9999] mix-blend-multiply" id="c"></div>
-  <div class="cursor-ring fixed w-8 h-8 rounded-full border border-ink pointer-events-none z-[9998]" id="cr"></div>
+  <div class="cursor fixed w-2.5 h-2.5 rounded-full bg-accent2 pointer-events-none z-[9999] mix-blend-multiply hidden md:block" id="c"></div>
+  <div class="cursor-ring fixed w-8 h-8 rounded-full border border-ink pointer-events-none z-[9998] hidden md:block" id="cr"></div>
 
   <!-- NAV -->
-  <nav class="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-12 py-4 bg-paper/90 backdrop-blur-xl border-b border-border">
-    <a href="/" class="flex items-center gap-2.5 font-display font-extrabold text-lg tracking-tight">
-      <img src="/logo.png" alt="AxonQwen" class="w-8 h-8 object-contain"/>
+  <nav class="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-4 sm:px-8 md:px-12 py-3 md:py-4 bg-paper/90 backdrop-blur-xl border-b border-border">
+    <a href="/" class="flex items-center gap-2 font-display font-extrabold text-base md:text-lg tracking-tight flex-shrink-0">
+      <img src="/logo.png" alt="AxonQwen" class="w-7 h-7 md:w-8 md:h-8 object-contain"/>
       Axon<span class="text-accent">Qwen</span>
     </a>
-    <div class="hidden md:flex items-center gap-8">
+    <div class="hidden lg:flex items-center gap-8">
       {[['features','#features'],['agents','#agents'],['usage','#usage'],['docs','#docs'],['roadmap','#roadmap']].map(([l,h])=>(
         <a href={h} class="text-xs text-muted uppercase tracking-widest hover:text-ink transition-colors">{l}</a>
       ))}
     </div>
-    <div class="flex items-center gap-2">
+    <div class="flex items-center gap-1.5 sm:gap-2">
       <!-- Token badge -->
-      <span class="text-[10px] px-3 py-1 rounded-full border font-mono flex items-center gap-2 border-accent/30 text-accent bg-accent/5">
+      <span class="hidden sm:flex text-[10px] px-3 py-1 rounded-full border font-mono items-center gap-2 border-accent/30 text-accent bg-accent/5">
         <span class="font-bold">$AXQWEN</span>
       </span>
       <!-- Buy button -->
-      <a href="#token" class="text-[10px] px-3 py-1.5 rounded-md bg-green/10 text-green border border-green/30 hover:bg-green/20 transition-all font-mono font-bold">Buy $AXQWEN</a>
+      <a href="#token" class="hidden sm:inline-block text-[10px] px-3 py-1.5 rounded-md bg-green/10 text-green border border-green/30 hover:bg-green/20 transition-all font-mono font-bold">Buy $AXQWEN</a>
       <!-- Ollama badge (checked client-side) -->
-      <span id="ollama-badge" class="text-[10px] px-3 py-1 rounded-full border font-mono flex items-center gap-2 border-dim text-muted bg-dim/5 hidden md:flex">
+      <span id="ollama-badge" class="text-[10px] px-3 py-1 rounded-full border font-mono items-center gap-2 border-dim text-muted bg-dim/5 hidden lg:flex">
         <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span>
         <span id="ollama-badge-text">Checking…</span>
       </span>
-      <a href="/login" class="text-xs px-4 py-2 rounded-md bg-ink text-paper hover:bg-accent hover:text-black transition-all font-mono font-bold">Connect Wallet →</a>
+      <a href="/login" class="text-[10px] sm:text-xs px-3 sm:px-4 py-1.5 sm:py-2 rounded-md bg-ink text-paper hover:bg-accent hover:text-black transition-all font-mono font-bold whitespace-nowrap">Connect Wallet →</a>
     </div>
   </nav>
 
   <!-- HERO -->
-  <section class="min-h-screen flex flex-col justify-end px-12 pb-20 pt-28 relative overflow-hidden bg-paper">
+  <section class="min-h-screen flex flex-col justify-end px-4 sm:px-8 md:px-12 pb-16 md:pb-20 pt-24 md:pt-28 relative overflow-hidden bg-paper">
     <div class="absolute inset-0 grid-bg opacity-50"></div>
     <div class="absolute inset-0 noise pointer-events-none"></div>
 
@@ -94,7 +94,7 @@ const steps = [
       <p class="text-muted text-sm leading-relaxed max-w-md font-mono">
         AxonQwen is a fully managed AI automation platform. Browser automation, visual analysis, smart scraping — powered by Qwen3.5 on dedicated infrastructure at axonqwen.xyz.
       </p>
-      <div class="flex items-center gap-3 flex-shrink-0">
+      <div class="flex flex-wrap items-center gap-3 flex-shrink-0">
         <a href="/login" class="btn-primary">▶ Connect Wallet</a>
         <a href="#token" class="btn-secondary">$AXQWEN →</a>
       </div>
@@ -114,7 +114,7 @@ const steps = [
   </div>
 
   <!-- FEATURES -->
-  <section class="bg-ink py-28 px-12" id="features">
+  <section class="bg-ink py-16 md:py-28 px-4 sm:px-8 md:px-12" id="features">
     <div class="max-w-6xl mx-auto">
       <p class="text-gold text-[10px] uppercase tracking-[.16em] mb-4 reveal">What AxonQwen Does</p>
       <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-16 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">All the Automation Tools You Need.</h2>
@@ -132,7 +132,7 @@ const steps = [
   </section>
 
   <!-- AGENTS -->
-  <section class="bg-paper py-28 px-12" id="agents">
+  <section class="bg-paper py-16 md:py-28 px-4 sm:px-8 md:px-12" id="agents">
     <div class="max-w-5xl mx-auto">
       <p class="text-accent2 text-[10px] uppercase tracking-[.16em] mb-4 reveal">Built-in Agents</p>
       <h2 class="font-display font-extrabold text-ink leading-tight tracking-tight mb-16 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Five Agents, One Platform.</h2>
@@ -144,10 +144,10 @@ const steps = [
           ['Monitor',     'Schedule periodic URL checks with natural language trigger conditions. Alerts sent via WebSocket instantly.'],
           ['Chat',        'Full streaming chat via API route → Ollama. Persistent memory through OpenClaw. Optional Telegram/Slack.'],
         ].map(([name, desc], i)=>(
-          <div class="flex items-start gap-8 px-8 py-7 border-b border-border last:border-0 hover:bg-paper2 transition-colors">
-            <div class="font-display font-extrabold text-4xl text-border min-w-[56px] leading-none">0{i+1}</div>
+          <div class="flex flex-col sm:flex-row items-start gap-3 sm:gap-8 px-4 sm:px-8 py-5 sm:py-7 border-b border-border last:border-0 hover:bg-paper2 transition-colors">
+            <div class="font-display font-extrabold text-2xl sm:text-4xl text-border min-w-[40px] sm:min-w-[56px] leading-none">0{i+1}</div>
             <div class="flex-1">
-              <h3 class="font-display font-bold text-ink text-xl mb-2">{name} Agent</h3>
+              <h3 class="font-display font-bold text-ink text-lg sm:text-xl mb-2">{name} Agent</h3>
               <p class="text-muted text-[13px] leading-relaxed">{desc}</p>
             </div>
             <div class="flex items-center gap-1.5 text-xs text-muted flex-shrink-0 pt-1">
@@ -160,7 +160,7 @@ const steps = [
   </section>
 
   <!-- HOW TO USE -->
-  <section class="bg-ink py-28 px-12" id="usage">
+  <section class="bg-ink py-16 md:py-28 px-4 sm:px-8 md:px-12" id="usage">
     <div class="max-w-5xl mx-auto">
       <p class="text-gold text-[10px] uppercase tracking-[.16em] mb-4 reveal">How to Use</p>
       <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-6 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Complete Usage Guide.</h2>
@@ -393,7 +393,7 @@ const steps = [
   </section>
 
   <!-- DOCS -->
-  <section class="bg-ink py-28 px-12" id="docs">
+  <section class="bg-ink py-16 md:py-28 px-4 sm:px-8 md:px-12" id="docs">
     <div class="max-w-5xl mx-auto">
       <p class="text-gold text-[10px] uppercase tracking-[.16em] mb-4 reveal">API Reference</p>
       <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-4 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Express API Routes.<br/>Standalone Server.</h2>
@@ -438,7 +438,7 @@ ws.onmessage = ({ data }) => {
   </section>
 
   <!-- QUICKSTART -->
-  <section class="bg-paper2 py-28 px-12" id="quickstart">
+  <section class="bg-paper2 py-16 md:py-28 px-4 sm:px-8 md:px-12" id="quickstart">
     <div class="max-w-4xl mx-auto">
       <p class="text-accent2 text-[10px] uppercase tracking-[.16em] mb-4 reveal">Getting Started</p>
       <h2 class="font-display font-extrabold text-ink leading-tight tracking-tight mb-6 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Ready in 3 Steps.</h2>
@@ -447,13 +447,13 @@ ws.onmessage = ({ data }) => {
       </p>
       <div class="divide-y divide-border">
         {steps.map((s, i)=>(
-          <div class={`flex gap-10 py-10 reveal delay-${(i+1)*100}`}>
-            <div class="font-display font-extrabold text-4xl text-border min-w-[56px] leading-none">{s.n}</div>
+          <div class={`flex flex-col sm:flex-row gap-4 sm:gap-10 py-8 sm:py-10 reveal delay-${(i+1)*100}`}>
+            <div class="font-display font-extrabold text-2xl sm:text-4xl text-border min-w-[40px] sm:min-w-[56px] leading-none">{s.n}</div>
             <div class="flex-1">
-              <h3 class="font-display font-bold text-ink text-xl mb-2">{s.t}</h3>
+              <h3 class="font-display font-bold text-ink text-lg sm:text-xl mb-2">{s.t}</h3>
               <p class="text-muted text-[13px] leading-relaxed mb-4">{s.desc}</p>
               <div class="bg-ink rounded-xl overflow-hidden">
-                <pre class="px-6 py-5 text-[12px] leading-relaxed text-[#9ab0c8] overflow-x-auto font-mono whitespace-pre-wrap">{s.code}</pre>
+                <pre class="px-4 sm:px-6 py-4 sm:py-5 text-[11px] sm:text-[12px] leading-relaxed text-[#9ab0c8] overflow-x-auto font-mono whitespace-pre-wrap">{s.code}</pre>
               </div>
             </div>
           </div>
@@ -461,7 +461,7 @@ ws.onmessage = ({ data }) => {
       </div>
 
       <!-- Troubleshooting -->
-      <div class="mt-16 bg-ink rounded-xl p-8 reveal" id="troubleshooting">
+      <div class="mt-12 sm:mt-16 bg-ink rounded-xl p-4 sm:p-8 reveal" id="troubleshooting">
         <h3 class="font-display font-bold text-white text-lg mb-6 flex items-center gap-3">
           <span class="text-gold">!</span> Troubleshooting
         </h3>
@@ -500,12 +500,12 @@ ws.onmessage = ({ data }) => {
   </section>
 
   <!-- MODELS -->
-  <section class="bg-paper py-28 px-12" id="models">
+  <section class="bg-paper py-16 md:py-28 px-4 sm:px-8 md:px-12" id="models">
     <div class="max-w-5xl mx-auto">
       <p class="text-accent text-[10px] uppercase tracking-[.16em] mb-4 reveal">Model Selection</p>
       <h2 class="font-display font-extrabold text-ink leading-tight tracking-tight mb-12 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Choose Your Qwen3.5 Model.</h2>
-      <div class="border border-border rounded-xl overflow-hidden reveal delay-200">
-        <table class="w-full text-sm">
+      <div class="border border-border rounded-xl overflow-x-auto reveal delay-200">
+        <table class="w-full text-sm min-w-[540px]">
           <thead><tr class="bg-paper2 text-[10px] uppercase tracking-widest text-muted border-b border-border">
             <th class="px-6 py-3 text-left">Model</th>
             <th class="px-6 py-3 text-left font-mono">ID</th>
@@ -536,7 +536,7 @@ ws.onmessage = ({ data }) => {
   </section>
 
   <!-- ROADMAP -->
-  <section class="bg-ink py-28 px-12" id="roadmap">
+  <section class="bg-ink py-16 md:py-28 px-4 sm:px-8 md:px-12" id="roadmap">
     <div class="max-w-5xl mx-auto">
       <p class="text-gold text-[10px] uppercase tracking-[.16em] mb-4 reveal">Roadmap</p>
       <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-6 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">What's Coming Next.</h2>
@@ -624,33 +624,16 @@ ws.onmessage = ({ data }) => {
   </section>
 
   <!-- TOKEN -->
-  <section class="bg-paper2 py-28 px-12" id="token">
+  <section class="bg-paper2 py-16 md:py-28 px-4 sm:px-8 md:px-12" id="token">
     <div class="max-w-4xl mx-auto">
       <p class="text-accent text-[10px] uppercase tracking-[.16em] mb-4 reveal">$AXQWEN Token</p>
       <h2 class="font-display font-extrabold text-ink leading-tight tracking-tight mb-6 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Power the Network.</h2>
       <p class="text-muted text-sm leading-relaxed max-w-lg mb-12 reveal delay-200">$AXQWEN is the utility token that powers the AxonQwen ecosystem. Use it to access premium features, stake for priority access, and participate in governance.</p>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 reveal delay-300">
-        <div class="bg-ink rounded-xl p-6 border border-dim">
-          <div class="text-accent text-2xl mb-3">⬡</div>
-          <h3 class="font-display font-bold text-white text-sm mb-2">Utility</h3>
-          <p class="text-muted text-xs leading-relaxed">Pay for premium agent usage, unlock advanced features, and access higher rate limits with $AXQWEN tokens.</p>
-        </div>
-        <div class="bg-ink rounded-xl p-6 border border-dim">
-          <div class="text-green text-2xl mb-3">◈</div>
-          <h3 class="font-display font-bold text-white text-sm mb-2">Staking</h3>
-          <p class="text-muted text-xs leading-relaxed">Stake $AXQWEN to earn rewards, get priority queue access for AI tasks, and unlock exclusive agent capabilities.</p>
-        </div>
-        <div class="bg-ink rounded-xl p-6 border border-dim">
-          <div class="text-gold text-2xl mb-3">⊕</div>
-          <h3 class="font-display font-bold text-white text-sm mb-2">Governance</h3>
-          <p class="text-muted text-xs leading-relaxed">Hold $AXQWEN to vote on platform features, model selection, and the future direction of AxonQwen development.</p>
-        </div>
-      </div>
 
       <!-- Contract Address -->
       <div class="bg-ink rounded-xl border border-dim overflow-hidden reveal">
-        <div class="px-8 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="px-4 sm:px-8 py-5 sm:py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <p class="text-[10px] text-muted uppercase tracking-widest mb-2">Contract Address (CA)</p>
             <div class="flex items-center gap-3">
@@ -658,12 +641,12 @@ ws.onmessage = ({ data }) => {
               <button id="copy-ca" class="text-[10px] px-2 py-1 rounded border border-dim text-muted hover:text-white hover:border-accent/30 transition-all cursor-pointer" style="display:none">Copy</button>
             </div>
           </div>
-          <div class="flex items-center gap-3">
+          <div class="flex flex-wrap items-center gap-3">
             <a href="#token" class="text-sm px-6 py-2.5 rounded-lg bg-green text-ink font-display font-bold hover:bg-green/80 transition-all">Buy $AXQWEN</a>
             <a href="/login" class="text-sm px-6 py-2.5 rounded-lg bg-accent/10 text-accent border border-accent/30 font-display font-bold hover:bg-accent/20 transition-all">Connect Wallet</a>
           </div>
         </div>
-        <div class="px-8 py-4 border-t border-dim flex flex-wrap gap-6">
+        <div class="px-4 sm:px-8 py-4 border-t border-dim flex flex-wrap gap-4 sm:gap-6">
           {[
             ['Network', 'TBA'],
             ['Total Supply', 'TBA'],
@@ -681,7 +664,7 @@ ws.onmessage = ({ data }) => {
   </section>
 
   <!-- CTA -->
-  <section class="bg-ink py-40 px-12 text-center relative overflow-hidden">
+  <section class="bg-ink py-24 md:py-40 px-4 sm:px-8 md:px-12 text-center relative overflow-hidden">
     <div class="absolute inset-0 dark-grid-bg opacity-30"></div>
     <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
       <div class="w-[600px] h-[400px] rounded-full bg-accent/5 blur-[80px]"></div>
@@ -692,17 +675,17 @@ ws.onmessage = ({ data }) => {
         Your AI Workforce.<br/><span class="text-accent">Starts Now.</span>
       </h2>
       <p class="text-muted text-sm mb-10 max-w-md mx-auto">Connect your wallet and start automating. Powered by $AXQWEN.</p>
-      <div class="flex items-center justify-center gap-4 reveal delay-200">
-        <a href="/login" class="btn-primary text-sm px-8 py-3">Connect Wallet →</a>
-        <a href="#token" class="text-sm px-6 py-3 rounded-lg bg-green/10 text-green border border-green/30 hover:bg-green/20 transition-all font-display font-bold">Buy $AXQWEN</a>
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 reveal delay-200">
+        <a href="/login" class="btn-primary text-sm px-8 py-3 w-full sm:w-auto text-center">Connect Wallet →</a>
+        <a href="#token" class="text-sm px-6 py-3 rounded-lg bg-green/10 text-green border border-green/30 hover:bg-green/20 transition-all font-display font-bold w-full sm:w-auto text-center">Buy $AXQWEN</a>
       </div>
     </div>
   </section>
 
   <!-- FOOTER -->
-  <footer class="bg-[#020407] px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-dim">
+  <footer class="bg-[#020407] px-4 sm:px-8 md:px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-dim">
     <div class="font-display font-extrabold text-white text-sm">Axon<span class="text-accent">Qwen</span></div>
-    <div class="flex gap-6">
+    <div class="flex flex-wrap justify-center gap-4 sm:gap-6">
       {[['Features','#features'],['Agents','#agents'],['Usage','#usage'],['$AXQWEN','#token'],['Roadmap','#roadmap'],['Login','/login']].map(([l,h])=>(
         <a href={h} class="text-[11px] text-muted/50 hover:text-white transition-colors font-mono">{l}</a>
       ))}
