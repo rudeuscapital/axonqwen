@@ -1,32 +1,32 @@
 ---
 import AppLayout from '../../layouts/AppLayout.astro';
 ---
-<AppLayout title="Logs" active="logs">
+<AppLayout title="Log" active="logs">
   <div class="space-y-4 h-full flex flex-col">
     <div class="flex items-center justify-between flex-shrink-0 flex-wrap gap-3">
-      <div><h2 class="font-display font-bold text-white text-2xl mb-1">Logs</h2><p class="text-muted text-sm">Real-time log stream via WebSocket.</p></div>
+      <div><h2 class="font-display font-bold text-white text-2xl mb-1">Log</h2><p class="text-muted text-sm">Stream log real-time via WebSocket.</p></div>
       <div class="flex items-center gap-2 flex-wrap">
-        {['ALL','INFO','OK','WARN','ERROR'].map(f=>(
+        {['SEMUA','INFO','OK','WARN','ERROR'].map(f=>(
           <button class="filter-btn px-3 py-1.5 rounded text-xs font-mono transition-all border border-dim text-muted hover:text-white" data-filter={f}>{f}</button>
         ))}
-        <button id="pause-btn" class="px-3 py-1.5 rounded text-xs font-mono border border-dim text-muted hover:text-white transition-all">⏸ Pause</button>
-        <button id="clear-btn" class="text-xs text-muted hover:text-accent2 font-mono px-2">✕ Clear</button>
+        <button id="pause-btn" class="px-3 py-1.5 rounded text-xs font-mono border border-dim text-muted hover:text-white transition-all">⏸ Jeda</button>
+        <button id="clear-btn" class="text-xs text-muted hover:text-accent2 font-mono px-2">✕ Hapus</button>
       </div>
     </div>
     <div id="log-terminal" class="flex-1 bg-[#02040a] border border-dim rounded-xl p-5 font-mono text-xs space-y-1 overflow-y-auto min-h-[400px]">
-      <p class="text-muted/30">Waiting for server logs… Make sure the dev server is running.</p>
+      <p class="text-muted/30">Menunggu log server… Pastikan server dev sedang berjalan.</p>
     </div>
   </div>
   <script>
     const terminal = document.getElementById('log-terminal')!;
-    let activeFilter = 'ALL'; let paused = false;
+    let activeFilter = 'SEMUA'; let paused = false;
     const logs: any[] = [];
     const colors: Record<string,string> = {INFO:'text-[#9ab0c8]',OK:'text-green-400',WARN:'text-yellow-400',ERROR:'text-red-400'};
 
     function render() {
       terminal.innerHTML = '';
-      const filtered = activeFilter==='ALL' ? logs : logs.filter(l=>l.level===activeFilter);
-      if(filtered.length===0){terminal.innerHTML='<p class="text-muted/30">No logs.</p>';return;}
+      const filtered = activeFilter==='SEMUA' ? logs : logs.filter(l=>l.level===activeFilter);
+      if(filtered.length===0){terminal.innerHTML='<p class="text-muted/30">Tidak ada log.</p>';return;}
       filtered.forEach(l=>{
         const p=document.createElement('p');
         p.className=`flex gap-3 ${colors[l.level]||'text-muted'}`;
@@ -48,7 +48,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
     const pauseBtn = document.getElementById('pause-btn')!;
     pauseBtn.onclick=()=>{
       paused=!paused;
-      pauseBtn.textContent=paused?'▶ Resume':'⏸ Pause';
+      pauseBtn.textContent=paused?'▶ Lanjut':'⏸ Jeda';
       pauseBtn.className=`px-3 py-1.5 rounded text-xs font-mono border transition-all ${paused?'border-yellow-400/30 text-yellow-400':'border-dim text-muted hover:text-white'}`;
     };
 
@@ -59,7 +59,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
         render();
       }
     });
-    // Activate ALL filter by default
-    document.querySelector('[data-filter="ALL"]')?.classList.add('bg-dim','text-accent','border-accent/30');
+    // Activate SEMUA filter by default
+    document.querySelector('[data-filter="SEMUA"]')?.classList.add('bg-dim','text-accent','border-accent/30');
   </script>
 </AppLayout>

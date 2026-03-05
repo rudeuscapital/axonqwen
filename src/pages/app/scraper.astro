@@ -1,42 +1,42 @@
 ---
 import AppLayout from '../../layouts/AppLayout.astro';
 ---
-<AppLayout title="Scraper Agent" active="scraper">
+<AppLayout title="Agen Scraper" active="scraper">
   <div class="max-w-3xl space-y-5">
     <div>
-      <h2 class="font-display font-bold text-white text-2xl mb-1">Scraper Agent</h2>
-      <p class="text-muted text-sm">Navigate any URL with real Chromium and extract structured JSON data powered by Qwen3.5.</p>
+      <h2 class="font-display font-bold text-white text-2xl mb-1">Agen Scraper</h2>
+      <p class="text-muted text-sm">Buka URL apapun dengan Chromium asli dan ekstrak data JSON terstruktur dengan Qwen3.5.</p>
     </div>
     <div class="bg-wire border border-dim rounded-xl p-6 space-y-4">
       <div>
-        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">URL to Scrape</label>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">URL yang Discrape</label>
         <input id="url" type="url" placeholder="https://example.com" class="field"/>
       </div>
       <div>
-        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Fields (optional)</label>
-        <input id="fields" type="text" placeholder="e.g. title, price, rating — or leave blank" class="field"/>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Field (opsional)</label>
+        <input id="fields" type="text" placeholder="cth. judul, harga, rating — atau kosongkan" class="field"/>
       </div>
-      <button id="run-btn" class="btn-primary">◉ Run Scraper</button>
+      <button id="run-btn" class="btn-primary">◉ Jalankan Scraper</button>
     </div>
     <div class="bg-wire border border-dim rounded-xl p-5">
-      <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Examples</p>
+      <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Contoh</p>
       <div class="space-y-2" id="examples">
-        <button class="ex w-full text-left px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:bg-dim/50 transition-all" data-url="https://quotes.toscrape.com" data-fields="quote text, author, tags"><div class="text-xs text-accent font-mono">https://quotes.toscrape.com</div><div class="text-xs text-muted">Fields: quote text, author, tags</div></button>
-        <button class="ex w-full text-left px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:bg-dim/50 transition-all" data-url="https://books.toscrape.com" data-fields="title, price, rating, availability"><div class="text-xs text-accent font-mono">https://books.toscrape.com</div><div class="text-xs text-muted">Fields: title, price, rating, availability</div></button>
+        <button class="ex w-full text-left px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:bg-dim/50 transition-all" data-url="https://quotes.toscrape.com" data-fields="teks kutipan, penulis, tag"><div class="text-xs text-accent font-mono">https://quotes.toscrape.com</div><div class="text-xs text-muted">Field: teks kutipan, penulis, tag</div></button>
+        <button class="ex w-full text-left px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:bg-dim/50 transition-all" data-url="https://books.toscrape.com" data-fields="judul, harga, rating, ketersediaan"><div class="text-xs text-accent font-mono">https://books.toscrape.com</div><div class="text-xs text-muted">Field: judul, harga, rating, ketersediaan</div></button>
       </div>
     </div>
     <div id="status-box" class="hidden bg-wire border border-accent/20 rounded-xl p-5 space-y-3">
       <div id="steps-row" class="flex items-center"></div>
       <p class="text-accent text-xs font-mono flex items-center gap-2">
         <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
-        <span id="status-txt">Running…</span>
+        <span id="status-txt">Menjalankan…</span>
       </p>
     </div>
     <div id="error-box" class="hidden bg-accent2/10 border border-accent2/20 rounded-xl p-5"><p id="error-txt" class="text-accent2 text-sm font-mono"></p></div>
     <div id="result-box" class="hidden bg-wire border border-dim rounded-xl overflow-hidden">
       <div class="flex items-center justify-between px-5 py-4 border-b border-dim">
-        <span class="text-white text-sm font-bold flex gap-2 items-center"><span class="w-2 h-2 rounded-full bg-green"></span>Result</span>
-        <button id="copy-btn" class="text-xs text-muted hover:text-accent font-mono">Copy JSON</button>
+        <span class="text-white text-sm font-bold flex gap-2 items-center"><span class="w-2 h-2 rounded-full bg-green"></span>Hasil</span>
+        <button id="copy-btn" class="text-xs text-muted hover:text-accent font-mono">Salin JSON</button>
       </div>
       <pre id="result-content" class="p-5 text-[12px] text-[#9ab0c8] font-mono overflow-auto max-h-[480px] whitespace-pre-wrap"></pre>
     </div>
@@ -51,7 +51,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
     const runBtn=document.getElementById('run-btn')!;
     const stepsRow=document.getElementById('steps-row')!;
     const statusTxt=document.getElementById('status-txt')!;
-    const STEPS=['Sending','Chromium','Scraping','AI Extract','Done'];
+    const STEPS=['Mengirim','Chromium','Scraping','Ekstrak AI','Selesai'];
     function setStep(n:number,msg:string){
       statusTxt.textContent=msg;
       let h='';
@@ -64,33 +64,33 @@ import AppLayout from '../../layouts/AppLayout.astro';
       });
       stepsRow.innerHTML=h;
     }
-    function scraperDone(){ runBtn.textContent='◉ Run Scraper'; runBtn.removeAttribute('disabled'); runBtn.classList.remove('opacity-60'); }
+    function scraperDone(){ runBtn.textContent='◉ Jalankan Scraper'; runBtn.removeAttribute('disabled'); runBtn.classList.remove('opacity-60'); }
     runBtn.onclick=async()=>{
       const url=(document.getElementById('url') as HTMLInputElement).value.trim();
       const fields=(document.getElementById('fields') as HTMLInputElement).value.trim();
       if(!url)return;
-      runBtn.textContent='⟳ Running…';
+      runBtn.textContent='⟳ Menjalankan…';
       runBtn.setAttribute('disabled','');
       runBtn.classList.add('opacity-60');
       document.getElementById('status-box')!.classList.remove('hidden');
       document.getElementById('error-box')!.classList.add('hidden');
       document.getElementById('result-box')!.classList.add('hidden');
-      setStep(0,'Sending request to server…');
+      setStep(0,'Mengirim permintaan ke server…');
       const r=await fetch('/api/scraper/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,fields:fields||undefined})}).catch(e=>({json:()=>({error:e.message})}));
       const d=await r.json();
       if(d.error){document.getElementById('status-box')!.classList.add('hidden');document.getElementById('error-box')!.classList.remove('hidden');document.getElementById('error-txt')!.textContent=d.error;scraperDone();return;}
       tid=d.taskId;
-      setStep(1,`Task ${tid} — launching Chromium…`);
+      setStep(1,`Tugas ${tid} — meluncurkan Chromium…`);
     };
     (window as any).__aq_ws_listeners??=new Set();
     (window as any).__aq_ws_listeners.add(async (msg:any)=>{
       if(msg.type==='scraper_progress'&&msg.taskId===tid){
-        if(msg.step==='chromium')  setStep(1,'Launching Chromium…');
-        if(msg.step==='navigating')setStep(1,'Navigating to page…');
-        if(msg.step==='scraping')  setStep(2,'Extracting page content…');
+        if(msg.step==='chromium')  setStep(1,'Meluncurkan Chromium…');
+        if(msg.step==='navigating')setStep(1,'Membuka halaman…');
+        if(msg.step==='scraping')  setStep(2,'Mengekstrak konten halaman…');
       }
       if(msg.type==='scraper_data_ready'&&msg.taskId===tid){
-        setStep(3,'AI extracting data via Ollama…');
+        setStep(3,'AI mengekstrak data via Ollama…');
         const resultBox=document.getElementById('result-box')!;
         const resultContent=document.getElementById('result-content')!;
         resultBox.classList.remove('hidden');
@@ -111,7 +111,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
             }),
           });
           if(!r.ok)throw new Error(`Ollama error: ${r.status}`);
-          if(!r.body)throw new Error('No response body');
+          if(!r.body)throw new Error('Tidak ada body respons');
 
           const reader=r.body.getReader();
           const decoder=new TextDecoder();
@@ -139,13 +139,13 @@ import AppLayout from '../../layouts/AppLayout.astro';
           if(!extracted) resultContent.textContent='Model tidak memberikan respons.';
           else resultContent.textContent=extracted;
           fetch(`/api/tasks/${tid}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'success',result:{extracted}})}).catch(()=>{});
-          setStep(4,'Complete!');
+          setStep(4,'Selesai!');
           setTimeout(()=>document.getElementById('status-box')!.classList.add('hidden'),1000);
           scraperDone();
         }catch(e:any){
           document.getElementById('status-box')!.classList.add('hidden');
           document.getElementById('error-box')!.classList.remove('hidden');
-          document.getElementById('error-txt')!.textContent=`AI error: ${e.message}. Pastikan Ollama berjalan.`;
+          document.getElementById('error-txt')!.textContent=`Kesalahan AI: ${e.message}. Pastikan Ollama berjalan.`;
           resultBox.classList.add('hidden');
           scraperDone();
         }
@@ -153,7 +153,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
       if(msg.type==='task_updated'&&msg.task?.id===tid&&msg.task?.status==='failed'){
         document.getElementById('status-box')!.classList.add('hidden');
         document.getElementById('error-box')!.classList.remove('hidden');
-        document.getElementById('error-txt')!.textContent=msg.task.error??'Failed';
+        document.getElementById('error-txt')!.textContent=msg.task.error??'Gagal';
         scraperDone();
       }
     });

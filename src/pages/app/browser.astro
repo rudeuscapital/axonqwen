@@ -4,42 +4,42 @@ import AppLayout from '../../layouts/AppLayout.astro';
 <AppLayout title="Browser RPA" active="browser">
   <div class="max-w-4xl space-y-5">
     <div>
-      <h2 class="font-display font-bold text-white text-2xl mb-1">Browser RPA Agent</h2>
-      <p class="text-muted text-sm">Describe the automation task. Qwen3.5 vision reads the page and generates a complete Playwright script.</p>
+      <h2 class="font-display font-bold text-white text-2xl mb-1">Agen Browser RPA</h2>
+      <p class="text-muted text-sm">Deskripsikan tugas otomasi. Qwen3.5 vision membaca halaman dan menghasilkan script Playwright lengkap.</p>
     </div>
     <div class="bg-wire border border-dim rounded-xl p-6 space-y-4">
       <div>
-        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Target URL</label>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">URL Target</label>
         <input id="url" type="url" placeholder="https://example.com" class="field"/>
       </div>
       <div>
-        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Instruction</label>
-        <textarea id="instr" rows="3" placeholder="Describe the automation task in plain English…" class="field resize-none"></textarea>
+        <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Instruksi</label>
+        <textarea id="instr" rows="3" placeholder="Deskripsikan tugas otomasi yang diinginkan…" class="field resize-none"></textarea>
       </div>
       <div class="flex items-center justify-between">
         <label class="flex items-center gap-3 cursor-pointer">
           <input id="headless" type="checkbox" checked class="w-4 h-4 accent-accent"/>
-          <span class="text-sm text-muted">Headless browser</span>
+          <span class="text-sm text-muted">Browser tanpa tampilan</span>
         </label>
-        <button id="run-btn" class="btn-primary">▶ Run Automation</button>
+        <button id="run-btn" class="btn-primary">▶ Jalankan Otomasi</button>
       </div>
     </div>
 
     <!-- Examples -->
     <div class="bg-wire border border-dim rounded-xl p-5">
-      <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Quick Examples</p>
+      <p class="text-[10px] text-muted uppercase tracking-widest mb-3">Contoh Cepat</p>
       <div class="space-y-2">
-        <button class="ex w-full text-left px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:bg-dim/50 transition-all" data-url="https://example.com" data-instr="Extract the main heading and all paragraph text">
+        <button class="ex w-full text-left px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:bg-dim/50 transition-all" data-url="https://example.com" data-instr="Ekstrak judul utama dan semua teks paragraf">
           <div class="text-xs text-accent font-mono mb-0.5">https://example.com</div>
-          <div class="text-xs text-muted">Extract the main heading and all paragraph text</div>
+          <div class="text-xs text-muted">Ekstrak judul utama dan semua teks paragraf</div>
         </button>
-        <button class="ex w-full text-left px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:bg-dim/50 transition-all" data-url="https://news.ycombinator.com" data-instr="Get the top 5 story titles and their points">
+        <button class="ex w-full text-left px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:bg-dim/50 transition-all" data-url="https://news.ycombinator.com" data-instr="Ambil 5 judul berita teratas beserta poinnya">
           <div class="text-xs text-accent font-mono mb-0.5">https://news.ycombinator.com</div>
-          <div class="text-xs text-muted">Get the top 5 story titles and their points</div>
+          <div class="text-xs text-muted">Ambil 5 judul berita teratas beserta poinnya</div>
         </button>
-        <button class="ex w-full text-left px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:bg-dim/50 transition-all" data-url="https://quotes.toscrape.com" data-instr="Extract all quotes and authors on the page as JSON">
+        <button class="ex w-full text-left px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:bg-dim/50 transition-all" data-url="https://quotes.toscrape.com" data-instr="Ekstrak semua kutipan dan penulis di halaman sebagai JSON">
           <div class="text-xs text-accent font-mono mb-0.5">https://quotes.toscrape.com</div>
-          <div class="text-xs text-muted">Extract all quotes and authors on the page as JSON</div>
+          <div class="text-xs text-muted">Ekstrak semua kutipan dan penulis di halaman sebagai JSON</div>
         </button>
       </div>
     </div>
@@ -49,17 +49,17 @@ import AppLayout from '../../layouts/AppLayout.astro';
       <div id="steps-row" class="flex items-center"></div>
       <p id="status-text" class="text-accent text-xs font-mono flex items-center gap-2">
         <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
-        <span id="status-msg">Starting…</span>
+        <span id="status-msg">Memulai…</span>
       </p>
     </div>
     <div id="error-box" class="hidden bg-accent2/10 border border-accent2/20 rounded-xl p-5">
-      <p class="text-accent2 text-sm font-bold mb-1">Error</p>
+      <p class="text-accent2 text-sm font-bold mb-1">Kesalahan</p>
       <p id="error-text" class="text-accent2/70 text-xs font-mono"></p>
     </div>
     <div id="result-box" class="hidden bg-wire border border-dim rounded-xl overflow-hidden">
       <div class="flex items-center justify-between px-5 py-4 border-b border-dim">
-        <span class="text-white text-sm font-bold flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green"></span>Result</span>
-        <button id="copy-btn" class="text-xs text-muted hover:text-accent font-mono">Copy</button>
+        <span class="text-white text-sm font-bold flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green"></span>Hasil</span>
+        <button id="copy-btn" class="text-xs text-muted hover:text-accent font-mono">Salin</button>
       </div>
       <div id="result-content" class="p-5 text-[13px] text-[#9ab0c8] font-mono leading-relaxed overflow-auto max-h-[500px]"></div>
     </div>
@@ -77,9 +77,9 @@ import AppLayout from '../../layouts/AppLayout.astro';
         const et = document.getElementById('error-text')!;
         sb.classList.add('hidden');
         eb.classList.remove('hidden');
-        et.textContent = 'Timeout — server tidak merespons dalam 60 detik. Cek server logs.';
+        et.textContent = 'Timeout — server tidak merespons dalam 60 detik. Cek log server.';
         const rb = document.getElementById('run-btn')!;
-        rb.textContent = '▶ Run Automation'; rb.removeAttribute('disabled'); rb.classList.remove('opacity-60');
+        rb.textContent = '▶ Jalankan Otomasi'; rb.removeAttribute('disabled'); rb.classList.remove('opacity-60');
         currentTaskId = null;
       }, 60_000);
     }
@@ -93,7 +93,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
     const resultEl  = document.getElementById('result-content')!;
     const copyBtn   = document.getElementById('copy-btn')!;
 
-    const STEPS = ['Sending', 'Chromium', 'Capturing', 'AI Analysis', 'Done'];
+    const STEPS = ['Mengirim', 'Chromium', 'Menangkap', 'Analisis AI', 'Selesai'];
     function setStep(n: number, msg: string) {
       statusMsg.textContent = msg;
       let html = '';
@@ -131,10 +131,10 @@ import AppLayout from '../../layouts/AppLayout.astro';
       statusBox.classList.remove('hidden');
       errorBox.classList.add('hidden');
       resultBox.classList.add('hidden');
-      runBtn.textContent = '⟳ Running…';
+      runBtn.textContent = '⟳ Menjalankan…';
       runBtn.setAttribute('disabled','');
       runBtn.classList.add('opacity-60');
-      setStep(0, 'Sending request to server…');
+      setStep(0, 'Mengirim permintaan ke server…');
 
       try {
         const r = await fetch('/api/browser/run', {
@@ -144,13 +144,13 @@ import AppLayout from '../../layouts/AppLayout.astro';
         const d = await r.json();
         if (d.error) throw new Error(d.error);
         currentTaskId = d.taskId;
-        setStep(1, `Task ${currentTaskId} — launching Chromium…`);
+        setStep(1, `Tugas ${currentTaskId} — meluncurkan Chromium…`);
         resetStuckTimer();
       } catch(e:any) {
         statusBox.classList.add('hidden');
         errorBox.classList.remove('hidden');
         errorTxt.textContent = e.message;
-        runBtn.textContent = '▶ Run Automation';
+        runBtn.textContent = '▶ Jalankan Otomasi';
         runBtn.removeAttribute('disabled');
         runBtn.classList.remove('opacity-60');
       }
@@ -158,16 +158,15 @@ import AppLayout from '../../layouts/AppLayout.astro';
 
     (window as any).__aq_ws_listeners ??= new Set();
     (window as any).__aq_ws_listeners.add(async (msg: any) => {
-      // Intermediate progress from server (Playwright stages)
       if (msg.type === 'browser_progress' && msg.taskId === currentTaskId) {
         resetStuckTimer();
-        if (msg.step === 'chromium')   setStep(1, 'Launching Chromium…');
-        if (msg.step === 'navigating') setStep(1, 'Navigating to page…');
-        if (msg.step === 'capturing')  setStep(2, 'Capturing screenshot & page text…');
+        if (msg.step === 'chromium')   setStep(1, 'Meluncurkan Chromium…');
+        if (msg.step === 'navigating') setStep(1, 'Membuka halaman…');
+        if (msg.step === 'capturing')  setStep(2, 'Menangkap screenshot & teks halaman…');
       }
       if (msg.type === 'browser_data_ready' && msg.taskId === currentTaskId) {
         if (stuckTimer) clearTimeout(stuckTimer);
-        setStep(3, 'AI analyzing page via local Ollama…');
+        setStep(3, 'AI menganalisis halaman via Ollama lokal…');
         resultBox.classList.remove('hidden');
         resultEl.innerHTML = '<span class="opacity-40 animate-pulse">▋</span>';
         try {
@@ -188,7 +187,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
             }),
           });
           if (!r.ok) throw new Error(`Ollama error: ${r.status}`);
-          if (!r.body) throw new Error('No response body');
+          if (!r.body) throw new Error('Tidak ada body respons');
 
           const reader = r.body.getReader();
           const decoder = new TextDecoder();
@@ -211,7 +210,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
                   let html = '';
                   if (thinkingText) {
                     html += `<details class="mb-3" ${!accumulated ? 'open' : ''}>
-                      <summary class="text-[11px] text-muted cursor-pointer select-none hover:text-accent"><span class="text-accent/60">◈</span> Thinking${!accumulated ? '<span class="animate-pulse ml-1">…</span>' : ''}</summary>
+                      <summary class="text-[11px] text-muted cursor-pointer select-none hover:text-accent"><span class="text-accent/60">◈</span> Berpikir${!accumulated ? '<span class="animate-pulse ml-1">…</span>' : ''}</summary>
                       <div class="mt-1.5 pl-3 border-l border-dim text-xs text-muted/80">${md(thinkingText)}</div>
                     </details>`;
                   }
@@ -227,15 +226,15 @@ import AppLayout from '../../layouts/AppLayout.astro';
           const output = accumulated || thinkingText || '';
           if (!output) resultEl.innerHTML = '<span class="text-muted italic">Model tidak memberikan respons.</span>';
           fetch(`/api/tasks/${currentTaskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'success', result: { output } }) }).catch(() => {});
-          setStep(4, 'Complete!');
+          setStep(4, 'Selesai!');
           setTimeout(() => statusBox.classList.add('hidden'), 1000);
         } catch (e: any) {
           statusBox.classList.add('hidden');
           errorBox.classList.remove('hidden');
-          errorTxt.textContent = `AI error: ${e.message}. Pastikan Ollama berjalan di komputer Anda.`;
+          errorTxt.textContent = `Kesalahan AI: ${e.message}. Pastikan Ollama berjalan di komputer Anda.`;
           resultBox.classList.add('hidden');
         }
-        runBtn.textContent = '▶ Run Automation';
+        runBtn.textContent = '▶ Jalankan Otomasi';
         runBtn.removeAttribute('disabled');
         runBtn.classList.remove('opacity-60');
       }
@@ -243,8 +242,8 @@ import AppLayout from '../../layouts/AppLayout.astro';
         if (stuckTimer) clearTimeout(stuckTimer);
         statusBox.classList.add('hidden');
         errorBox.classList.remove('hidden');
-        errorTxt.textContent = msg.task.error ?? 'Task failed';
-        runBtn.textContent = '▶ Run Automation';
+        errorTxt.textContent = msg.task.error ?? 'Tugas gagal';
+        runBtn.textContent = '▶ Jalankan Otomasi';
         runBtn.removeAttribute('disabled');
         runBtn.classList.remove('opacity-60');
       }
