@@ -148,9 +148,9 @@ export async function connectSolana(): Promise<AuthSession> {
   const encodedMsg = new TextEncoder().encode(message);
   const signedMessage = await phantom.signMessage(encodedMsg, 'utf8');
 
-  // Encode signature as bs58
-  const { default: bs58 } = await import('bs58');
-  const signature = bs58.encode(signedMessage.signature);
+  // Encode signature as base64 (browser-safe, no external deps)
+  const sigBytes = new Uint8Array(signedMessage.signature);
+  const signature = btoa(String.fromCharCode(...sigBytes));
 
   // Verify on server
   const session = await verifySignature(address, 'solana', signature, message);

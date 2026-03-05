@@ -81,7 +81,9 @@ router.post('/api/auth/verify', async (req, res) => {
       const nacl = (await import('tweetnacl')).default;
       const bs58 = (await import('bs58')).default;
       const msgBytes = new TextEncoder().encode(message);
-      const sigBytes = bs58.decode(signature);
+      // Signature is base64-encoded from client
+      const sigBytes = Uint8Array.from(atob(signature), c => c.charCodeAt(0));
+      // Public key (address) is bs58-encoded (standard Solana format)
       const pubBytes = bs58.decode(address);
       verified = nacl.sign.detached.verify(msgBytes, sigBytes, pubBytes);
     } else if (chain === 'ton') {
