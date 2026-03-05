@@ -48,9 +48,11 @@ import AppLayout from '../../layouts/AppLayout.astro';
     <div id="status-box" class="hidden bg-wire border border-accent/20 rounded-xl p-5 space-y-3">
       <div id="steps-row" class="flex items-center"></div>
       <p id="status-text" class="text-accent text-xs font-mono flex items-center gap-2">
-        <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+        <span id="pulse-dot" class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
         <span id="status-msg">Starting…</span>
+        <span id="elapsed" class="elapsed-timer"></span>
       </p>
+      <div id="activity-log" class="activity-log"></div>
     </div>
     <div id="error-box" class="hidden bg-accent2/10 border border-accent2/20 rounded-xl p-5">
       <p class="text-accent2 text-sm font-bold mb-1">Error</p>
@@ -58,7 +60,10 @@ import AppLayout from '../../layouts/AppLayout.astro';
     </div>
     <div id="result-box" class="hidden bg-wire border border-dim rounded-xl overflow-hidden">
       <div class="flex items-center justify-between px-5 py-4 border-b border-dim">
-        <span class="text-white text-sm font-bold flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-green"></span>Result</span>
+        <span class="text-white text-sm font-bold flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-green"></span>Result
+          <span id="result-stats" class="result-stats"></span>
+        </span>
         <button id="copy-btn" class="text-xs text-muted hover:text-accent font-mono">Copy</button>
       </div>
       <div id="result-content" class="p-5 text-[13px] text-[#9ab0c8] font-mono leading-relaxed overflow-auto max-h-[500px]"></div>
@@ -68,21 +73,23 @@ import AppLayout from '../../layouts/AppLayout.astro';
   <script>
     let currentTaskId: string | null = null;
     let stuckTimer: ReturnType<typeof setTimeout> | null = null;
+    const P = (window as any).__aq_progress;
+    let ps = P.create();
+
     function resetStuckTimer() {
       if (stuckTimer) clearTimeout(stuckTimer);
       stuckTimer = setTimeout(() => {
         if (!currentTaskId) return;
-        const sb = document.getElementById('status-box')!;
-        const eb = document.getElementById('error-box')!;
-        const et = document.getElementById('error-text')!;
-        sb.classList.add('hidden');
-        eb.classList.remove('hidden');
-        et.textContent = 'Timeout — server did not respond within 60 seconds. Check server logs.';
-        const rb = document.getElementById('run-btn')!;
-        rb.textContent = '▶ Run Automation'; rb.removeAttribute('disabled'); rb.classList.remove('opacity-60');
+        P.stopTimer(ps);
+        P.addLog(ps, logEl, 'Timeout — no response in 60s', 'log-error');
+        statusBox.classList.add('hidden');
+        errorBox.classList.remove('hidden');
+        errorTxt.textContent = 'Timeout — server did not respond within 60 seconds. Check server logs.';
+        runBtn.textContent = '▶ Run Automation'; runBtn.removeAttribute('disabled'); runBtn.classList.remove('opacity-60');
         currentTaskId = null;
       }, 60_000);
     }
+
     const runBtn    = document.getElementById('run-btn')!;
     const statusBox = document.getElementById('status-box')!;
     const stepsRow  = document.getElementById('steps-row')!;
@@ -92,6 +99,10 @@ import AppLayout from '../../layouts/AppLayout.astro';
     const resultBox = document.getElementById('result-box')!;
     const resultEl  = document.getElementById('result-content')!;
     const copyBtn   = document.getElementById('copy-btn')!;
+    const elapsedEl = document.getElementById('elapsed')!;
+    const logEl     = document.getElementById('activity-log')!;
+    const resultStats = document.getElementById('result-stats')!;
+    const pulseDot  = document.getElementById('pulse-dot')!;
 
     const STEPS = ['Sending', 'Chromium', 'Capturing', 'AI Analysis', 'Done'];
     function setStep(n: number, msg: string) {
@@ -134,6 +145,15 @@ import AppLayout from '../../layouts/AppLayout.astro';
       runBtn.textContent = '⟳ Running…';
       runBtn.setAttribute('disabled','');
       runBtn.classList.add('opacity-60');
+      pulseDot.className = 'w-1.5 h-1.5 rounded-full bg-accent animate-pulse';
+      resultStats.innerHTML = '';
+
+      ps = P.create();
+      P.startTimer(ps, elapsedEl);
+      logEl.innerHTML = '';
+      P.addLog(ps, logEl, 'Starting browser automation…');
+      P.addLog(ps, logEl, `Target: ${url}`);
+
       setStep(0, 'Sending request to server…');
 
       try {
@@ -144,9 +164,12 @@ import AppLayout from '../../layouts/AppLayout.astro';
         const d = await r.json();
         if (d.error) throw new Error(d.error);
         currentTaskId = d.taskId;
+        P.addLog(ps, logEl, `Task created: ${currentTaskId}`);
         setStep(1, `Task ${currentTaskId} — launching Chromium…`);
         resetStuckTimer();
       } catch(e:any) {
+        P.stopTimer(ps);
+        P.addLog(ps, logEl, `Error: ${e.message}`, 'log-error');
         statusBox.classList.add('hidden');
         errorBox.classList.remove('hidden');
         errorTxt.textContent = e.message;
@@ -160,24 +183,30 @@ import AppLayout from '../../layouts/AppLayout.astro';
     (window as any).__aq_ws_listeners.add(async (msg: any) => {
       if (msg.type === 'browser_progress' && msg.taskId === currentTaskId) {
         resetStuckTimer();
-        if (msg.step === 'chromium')   setStep(1, 'Launching Chromium…');
-        if (msg.step === 'navigating') setStep(1, 'Navigating to page…');
-        if (msg.step === 'capturing')  setStep(2, 'Capturing screenshot & page text…');
+        if (msg.step === 'chromium')   { setStep(1, 'Launching Chromium…'); P.addLog(ps, logEl, 'Launching Chromium…'); }
+        if (msg.step === 'navigating') { setStep(1, 'Navigating to page…'); P.addLog(ps, logEl, 'Navigating to page…'); }
+        if (msg.step === 'capturing')  { setStep(2, 'Capturing screenshot & page text…'); P.addLog(ps, logEl, 'Capturing screenshot & page text…'); }
       }
       if (msg.type === 'browser_data_ready' && msg.taskId === currentTaskId) {
         if (stuckTimer) clearTimeout(stuckTimer);
+        const charCount = (msg.pageText||'').length;
+        P.addLog(ps, logEl, `Page data received — ${charCount.toLocaleString()} chars`);
+
+        let settings: any = {};
+        try { settings = JSON.parse(localStorage.getItem('axonqwen-settings') || '{}'); } catch {}
+        const model = settings.model || 'qwen3.5';
+        P.addLog(ps, logEl, `AI analyzing with ${model}…`);
+
         setStep(3, 'AI analyzing page…');
         resultBox.classList.remove('hidden');
         resultEl.innerHTML = '<span class="opacity-40 animate-pulse">▋</span>';
         try {
-          let settings: any = {};
-          try { settings = JSON.parse(localStorage.getItem('axonqwen-settings') || '{}'); } catch {}
           const ollamaUrl = settings.ollamaUrl || (location.origin + '/ollama');
           const r = await fetch(`${ollamaUrl}/api/chat`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              model: settings.model || 'qwen3.5',
+              model,
               stream: true,
               options: { temperature: 0.3, num_predict: 4096, num_ctx: settings.numCtx || 32768 },
               messages: [
@@ -192,6 +221,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
           const reader = r.body.getReader();
           const decoder = new TextDecoder();
           let buf = '', accumulated = '', thinkingText = '';
+          P.addLog(ps, logEl, 'Streaming response…');
           while (true) {
             const {done,value} = await reader.read();
             if (done) break;
@@ -205,7 +235,14 @@ import AppLayout from '../../layouts/AppLayout.astro';
                 const tok = obj?.message?.content || '';
                 const think = obj?.message?.thinking || '';
                 if (think) thinkingText += think;
-                if (tok) accumulated += tok;
+                if (tok) {
+                  accumulated += tok;
+                  const tc = P.tick(ps);
+                  if (tc % 20 === 0) {
+                    const st = P.stats(ps);
+                    statusMsg.textContent = `AI analyzing… ${st.count} tokens · ${st.tps} tok/s`;
+                  }
+                }
                 if (think || tok) {
                   let html = '';
                   if (thinkingText) {
@@ -218,18 +255,25 @@ import AppLayout from '../../layouts/AppLayout.astro';
                   resultEl.innerHTML = html || '<span class="opacity-40 animate-pulse">▋</span>';
                   resultEl.scrollTop = resultEl.scrollHeight;
                 }
-                if (obj?.done) break;
+                if (obj?.done) { if (obj.eval_count) ps.tc = obj.eval_count; break; }
               } catch(pe:any) { if (pe.message && !pe.message.includes('JSON')) throw pe; }
             }
           }
 
           const output = accumulated || thinkingText || '';
           if (!output) resultEl.innerHTML = '<span class="text-muted italic">Model did not respond.</span>';
+
+          const totalMs = P.stopTimer(ps);
+          const finalStats = P.stats(ps);
+          P.addLog(ps, logEl, `Complete in ${P.fmt(totalMs)} — ${finalStats.count} tokens`, 'log-done');
+          resultStats.innerHTML = `<span class="stat-sep">·</span> ${P.fmt(totalMs)} <span class="stat-sep">·</span> ${finalStats.count} tokens`;
+          pulseDot.className = 'w-1.5 h-1.5 rounded-full bg-green';
+
           fetch(`/api/tasks/${currentTaskId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'success', result: { output } }) }).catch(() => {});
           setStep(4, 'Done!');
-          setTimeout(() => statusBox.classList.add('hidden'), 1000);
         } catch (e: any) {
-          statusBox.classList.add('hidden');
+          P.stopTimer(ps);
+          P.addLog(ps, logEl, `Error: ${e.message}`, 'log-error');
           errorBox.classList.remove('hidden');
           errorTxt.textContent = `AI Error: ${e.message}. Please try again shortly.`;
           resultBox.classList.add('hidden');
@@ -240,7 +284,8 @@ import AppLayout from '../../layouts/AppLayout.astro';
       }
       if (msg.type === 'task_updated' && msg.task?.id === currentTaskId && msg.task?.status === 'failed') {
         if (stuckTimer) clearTimeout(stuckTimer);
-        statusBox.classList.add('hidden');
+        P.stopTimer(ps);
+        P.addLog(ps, logEl, `Failed: ${msg.task.error ?? 'Unknown error'}`, 'log-error');
         errorBox.classList.remove('hidden');
         errorTxt.textContent = msg.task.error ?? 'Task failed';
         runBtn.textContent = '▶ Run Automation';

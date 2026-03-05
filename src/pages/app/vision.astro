@@ -26,14 +26,19 @@ import AppLayout from '../../layouts/AppLayout.astro';
         <div id="vision-progress" class="hidden bg-wire border border-accent/20 rounded-xl p-4 space-y-2.5">
           <div id="v-steps-row" class="flex items-center"></div>
           <p class="text-accent text-xs font-mono flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+            <span id="v-pulse-dot" class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
             <span id="v-status-txt">Processing…</span>
+            <span id="v-elapsed" class="elapsed-timer"></span>
           </p>
+          <div id="v-activity-log" class="activity-log"></div>
         </div>
       </div>
       <div class="bg-wire border border-dim rounded-xl flex flex-col overflow-hidden">
         <div class="px-5 py-4 border-b border-dim flex items-center justify-between">
-          <h3 class="font-display font-bold text-white text-sm">Extracted Data</h3>
+          <h3 class="font-display font-bold text-white text-sm flex items-center gap-2">
+            Extracted Data
+            <span id="v-result-stats" class="result-stats"></span>
+          </h3>
           <button id="copy-btn" class="text-xs text-muted hover:text-accent font-mono hidden">Copy</button>
         </div>
         <div id="result-area" class="flex-1 p-5 overflow-y-auto max-h-[460px]">
@@ -53,6 +58,13 @@ import AppLayout from '../../layouts/AppLayout.astro';
     const vProgress = document.getElementById('vision-progress')!;
     const vStepsRow = document.getElementById('v-steps-row')!;
     const vStatusTxt= document.getElementById('v-status-txt')!;
+    const vElapsed  = document.getElementById('v-elapsed')!;
+    const vLogEl    = document.getElementById('v-activity-log')!;
+    const vResultStats = document.getElementById('v-result-stats')!;
+    const vPulseDot = document.getElementById('v-pulse-dot')!;
+
+    const P = (window as any).__aq_progress;
+    let ps = P.create();
 
     const VSTEPS=['Upload','Processing','AI Analysis','Done'];
     function vSetStep(n:number,msg:string){
@@ -67,6 +79,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
       });
       vStepsRow.innerHTML=h;
     }
+
     const instrEl   = document.getElementById('instr') as HTMLTextAreaElement;
     const analyzeBtn= document.getElementById('analyze-btn') as HTMLButtonElement;
     const resultArea= document.getElementById('result-area')!;
@@ -94,22 +107,36 @@ import AppLayout from '../../layouts/AppLayout.astro';
     analyzeBtn.onclick = async () => {
       if (!imgB64) return;
       vProgress.classList.remove('hidden');
+      vPulseDot.className = 'w-1.5 h-1.5 rounded-full bg-accent animate-pulse';
+      vResultStats.innerHTML = '';
+
+      ps = P.create();
+      P.startTimer(ps, vElapsed);
+      vLogEl.innerHTML = '';
+      P.addLog(ps, vLogEl, 'Preparing image…');
+
       vSetStep(0, 'Preparing image…');
       resultArea.innerHTML = '<div class="flex items-center gap-3 text-accent text-sm"><span class="animate-spin">⟳</span> Analyzing image…</div>';
       analyzeBtn.textContent = '⟳ Analyzing…';
       analyzeBtn.setAttribute('disabled','');
       analyzeBtn.classList.add('opacity-60');
       copyBtn.classList.add('hidden');
+
       vSetStep(1, 'Sending image to AI service…');
+      P.addLog(ps, vLogEl, 'Sending image to AI service…');
+
       try {
         let settings: any = {};
         try { settings = JSON.parse(localStorage.getItem('axonqwen-settings') || '{}'); } catch {}
         const ollamaUrl = settings.ollamaUrl || (location.origin + '/ollama');
+        const model = settings.model || 'qwen3.5';
+        P.addLog(ps, vLogEl, `Model: ${model}`);
+
         const r = await fetch(`${ollamaUrl}/api/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            model: settings.model || 'qwen3.5',
+            model,
             stream: true,
             options: { temperature: 0.4, num_predict: 4096, num_ctx: settings.numCtx || 32768 },
             messages: [
@@ -125,6 +152,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
         const decoder = new TextDecoder();
         let buf = '', accumulated = '', thinkingText = '';
         vSetStep(2, 'AI analyzing image…');
+        P.addLog(ps, vLogEl, 'Streaming response…');
         resultArea.innerHTML = '<span class="opacity-40 animate-pulse">▋</span>';
         while (true) {
           const {done,value} = await reader.read();
@@ -139,7 +167,14 @@ import AppLayout from '../../layouts/AppLayout.astro';
               const tok = obj?.message?.content || '';
               const think = obj?.message?.thinking || '';
               if (think) thinkingText += think;
-              if (tok) accumulated += tok;
+              if (tok) {
+                accumulated += tok;
+                const tc = P.tick(ps);
+                if (tc % 20 === 0) {
+                  const st = P.stats(ps);
+                  vStatusTxt.textContent = `AI analyzing… ${st.count} tokens · ${st.tps} tok/s`;
+                }
+              }
               if (think || tok) {
                 let html = '';
                 if (thinkingText) {
@@ -152,17 +187,25 @@ import AppLayout from '../../layouts/AppLayout.astro';
                 resultArea.innerHTML = html || '<span class="opacity-40 animate-pulse">▋</span>';
                 resultArea.scrollTop = resultArea.scrollHeight;
               }
-              if (obj?.done) break;
+              if (obj?.done) { if (obj.eval_count) ps.tc = obj.eval_count; break; }
             } catch(pe:any) { if (pe.message && !pe.message.includes('JSON')) throw pe; }
           }
         }
         if (!accumulated && !thinkingText) {
           resultArea.innerHTML = '<span class="text-muted italic">Model did not respond.</span>';
         }
+
+        const totalMs = P.stopTimer(ps);
+        const finalStats = P.stats(ps);
+        P.addLog(ps, vLogEl, `Complete in ${P.fmt(totalMs)} — ${finalStats.count} tokens`, 'log-done');
+        vResultStats.innerHTML = `<span class="stat-sep">·</span> ${P.fmt(totalMs)} <span class="stat-sep">·</span> ${finalStats.count} tokens`;
+        vPulseDot.className = 'w-1.5 h-1.5 rounded-full bg-green';
+
         vSetStep(3, 'Done!');
-        setTimeout(()=>vProgress.classList.add('hidden'),1500);
         copyBtn.classList.remove('hidden');
       } catch(e:any) {
+        P.stopTimer(ps);
+        P.addLog(ps, vLogEl, `Error: ${e.message}`, 'log-error');
         resultArea.innerHTML = `<div class="space-y-2"><p style="color:#ff4444;font-weight:600;">Error: ${e.message}</p><p class="text-muted text-xs">AI service unavailable. Please try again shortly.</p></div>`;
         vProgress.classList.add('hidden');
       }

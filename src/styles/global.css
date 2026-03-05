@@ -103,3 +103,43 @@ body { font-family: 'JetBrains Mono', monospace; }
   height: 1px;
   background: var(--dim);
 }
+
+/* Activity log */
+.activity-log {
+  max-height: 120px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  font-family: 'JetBrains Mono', monospace;
+}
+.activity-log .log-entry {
+  display: flex;
+  gap: 8px;
+  padding: 2px 0;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.activity-log .log-ts {
+  color: var(--muted);
+  flex-shrink: 0;
+  min-width: 36px;
+}
+.activity-log .log-msg { color: #9ab0c8; }
+.activity-log .log-msg.log-done { color: var(--green); }
+.activity-log .log-msg.log-error { color: var(--accent2); }
+.elapsed-timer {
+  color: var(--muted);
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.result-stats {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--muted);
+  font-weight: 400;
+}
+.result-stats .stat-sep { color: var(--dim); }

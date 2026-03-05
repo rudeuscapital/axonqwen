@@ -141,5 +141,41 @@ const nav = [
       };
     })();
   </script>
+
+  <!-- Shared progress helpers for agent pages -->
+  <script>
+    (function() {
+      function fmt(ms: number): string {
+        const s = Math.floor(ms / 1000);
+        return `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, '0')}`;
+      }
+      function create() {
+        return { start: 0, iv: null as ReturnType<typeof setInterval> | null, tc: 0, ss: 0, log: [] as string[] };
+      }
+      function startTimer(st: any, el: HTMLElement | null) {
+        st.start = Date.now(); st.tc = 0; st.log = [];
+        if (st.iv) clearInterval(st.iv);
+        st.iv = setInterval(() => { if (el) el.textContent = fmt(Date.now() - st.start); }, 250);
+      }
+      function stopTimer(st: any): number {
+        if (st.iv) { clearInterval(st.iv); st.iv = null; }
+        return Date.now() - st.start;
+      }
+      function addLog(st: any, el: HTMLElement | null, msg: string, cls = '') {
+        const ts = fmt(Date.now() - st.start);
+        st.log.push(`<div class="log-entry"><span class="log-ts">[${ts}]</span><span class="log-msg ${cls}">${msg}</span></div>`);
+        if (el) { el.innerHTML = st.log.join(''); el.scrollTop = el.scrollHeight; }
+      }
+      function tick(st: any) {
+        if (st.tc === 0) st.ss = Date.now();
+        return ++st.tc;
+      }
+      function stats(st: any) {
+        const e = (Date.now() - st.ss) / 1000;
+        return { count: st.tc, tps: e > 0 ? (st.tc / e).toFixed(1) : '0.0' };
+      }
+      (window as any).__aq_progress = { create, startTimer, stopTimer, addLog, tick, stats, fmt };
+    })();
+  </script>
 </body>
 </html>

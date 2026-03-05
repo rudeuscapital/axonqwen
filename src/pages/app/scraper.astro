@@ -28,14 +28,19 @@ import AppLayout from '../../layouts/AppLayout.astro';
     <div id="status-box" class="hidden bg-wire border border-accent/20 rounded-xl p-5 space-y-3">
       <div id="steps-row" class="flex items-center"></div>
       <p class="text-accent text-xs font-mono flex items-center gap-2">
-        <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
+        <span id="pulse-dot" class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
         <span id="status-txt">Running…</span>
+        <span id="elapsed" class="elapsed-timer"></span>
       </p>
+      <div id="activity-log" class="activity-log"></div>
     </div>
     <div id="error-box" class="hidden bg-accent2/10 border border-accent2/20 rounded-xl p-5"><p id="error-txt" class="text-accent2 text-sm font-mono"></p></div>
     <div id="result-box" class="hidden bg-wire border border-dim rounded-xl overflow-hidden">
       <div class="flex items-center justify-between px-5 py-4 border-b border-dim">
-        <span class="text-white text-sm font-bold flex gap-2 items-center"><span class="w-2 h-2 rounded-full bg-green"></span>Result</span>
+        <span class="text-white text-sm font-bold flex gap-2 items-center">
+          <span class="w-2 h-2 rounded-full bg-green"></span>Result
+          <span id="result-stats" class="result-stats"></span>
+        </span>
         <button id="copy-btn" class="text-xs text-muted hover:text-accent font-mono">Copy JSON</button>
       </div>
       <pre id="result-content" class="p-5 text-[12px] text-[#9ab0c8] font-mono overflow-auto max-h-[480px] whitespace-pre-wrap"></pre>
@@ -43,14 +48,23 @@ import AppLayout from '../../layouts/AppLayout.astro';
   </div>
   <script>
     let tid: string|null = null;
+    const P = (window as any).__aq_progress;
+    let ps = P.create();
+
     document.querySelectorAll('.ex').forEach(b=>b.addEventListener('click',()=>{
       (document.getElementById('url') as HTMLInputElement).value=(b as HTMLElement).dataset.url!;
       (document.getElementById('fields') as HTMLInputElement).value=(b as HTMLElement).dataset.fields!;
     }));
     document.getElementById('copy-btn')!.onclick=()=>navigator.clipboard.writeText(document.getElementById('result-content')!.textContent??'');
+
     const runBtn=document.getElementById('run-btn')!;
     const stepsRow=document.getElementById('steps-row')!;
     const statusTxt=document.getElementById('status-txt')!;
+    const elapsedEl=document.getElementById('elapsed')!;
+    const logEl=document.getElementById('activity-log')!;
+    const resultStats=document.getElementById('result-stats')!;
+    const pulseDot=document.getElementById('pulse-dot')!;
+
     const STEPS=['Sending','Chromium','Scraping','AI Extract','Done'];
     function setStep(n:number,msg:string){
       statusTxt.textContent=msg;
@@ -64,7 +78,9 @@ import AppLayout from '../../layouts/AppLayout.astro';
       });
       stepsRow.innerHTML=h;
     }
+
     function scraperDone(){ runBtn.textContent='◉ Run Scraper'; runBtn.removeAttribute('disabled'); runBtn.classList.remove('opacity-60'); }
+
     runBtn.onclick=async()=>{
       const url=(document.getElementById('url') as HTMLInputElement).value.trim();
       const fields=(document.getElementById('fields') as HTMLInputElement).value.trim();
@@ -75,34 +91,59 @@ import AppLayout from '../../layouts/AppLayout.astro';
       document.getElementById('status-box')!.classList.remove('hidden');
       document.getElementById('error-box')!.classList.add('hidden');
       document.getElementById('result-box')!.classList.add('hidden');
+      pulseDot.className='w-1.5 h-1.5 rounded-full bg-accent animate-pulse';
+      resultStats.innerHTML='';
+
+      ps = P.create();
+      P.startTimer(ps, elapsedEl);
+      logEl.innerHTML='';
+      P.addLog(ps, logEl, 'Starting scraper…');
+
       setStep(0,'Sending request to server…');
+      P.addLog(ps, logEl, `Target: ${url}`);
+
       const r=await fetch('/api/scraper/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,fields:fields||undefined})}).catch(e=>({json:()=>({error:e.message})}));
       const d=await r.json();
-      if(d.error){document.getElementById('status-box')!.classList.add('hidden');document.getElementById('error-box')!.classList.remove('hidden');document.getElementById('error-txt')!.textContent=d.error;scraperDone();return;}
+      if(d.error){
+        P.stopTimer(ps);
+        P.addLog(ps, logEl, `Error: ${d.error}`, 'log-error');
+        document.getElementById('status-box')!.classList.add('hidden');
+        document.getElementById('error-box')!.classList.remove('hidden');
+        document.getElementById('error-txt')!.textContent=d.error;
+        scraperDone();return;
+      }
       tid=d.taskId;
+      P.addLog(ps, logEl, `Task created: ${tid}`);
       setStep(1,`Task ${tid} — launching Chromium…`);
     };
+
     (window as any).__aq_ws_listeners??=new Set();
     (window as any).__aq_ws_listeners.add(async (msg:any)=>{
       if(msg.type==='scraper_progress'&&msg.taskId===tid){
-        if(msg.step==='chromium')  setStep(1,'Launching Chromium…');
-        if(msg.step==='navigating')setStep(1,'Navigating to page…');
-        if(msg.step==='scraping')  setStep(2,'Extracting page content…');
+        if(msg.step==='chromium')  { setStep(1,'Launching Chromium…'); P.addLog(ps, logEl, 'Launching Chromium…'); }
+        if(msg.step==='navigating'){ setStep(1,'Navigating to page…'); P.addLog(ps, logEl, 'Navigating to page…'); }
+        if(msg.step==='scraping')  { setStep(2,'Extracting page content…'); P.addLog(ps, logEl, 'Extracting page content…'); }
       }
       if(msg.type==='scraper_data_ready'&&msg.taskId===tid){
+        const charCount = (msg.pageText||'').length;
+        P.addLog(ps, logEl, `Page loaded — ${charCount.toLocaleString()} chars extracted`);
         setStep(3,'AI extracting data…');
+
+        let settings:any={};
+        try{settings=JSON.parse(localStorage.getItem('axonqwen-settings')||'{}');}catch{}
+        const model = settings.model||'qwen3.5';
+        P.addLog(ps, logEl, `AI processing with ${model}…`);
+
         const resultBox=document.getElementById('result-box')!;
         const resultContent=document.getElementById('result-content')!;
         resultBox.classList.remove('hidden');
         resultContent.textContent='▋';
         try {
-          let settings:any={};
-          try{settings=JSON.parse(localStorage.getItem('axonqwen-settings')||'{}');}catch{}
           const ollamaUrl=settings.ollamaUrl||(location.origin+'/ollama');
           const r=await fetch(`${ollamaUrl}/api/chat`,{
             method:'POST',headers:{'Content-Type':'application/json'},
             body:JSON.stringify({
-              model:settings.model||'qwen3.5',stream:true,
+              model,stream:true,
               options:{temperature:0.1,num_predict:8192,num_ctx:settings.numCtx||32768},
               messages:[
                 {role:'system',content:'You are a data extraction specialist. Extract structured data from the web page content provided. Respond with ONLY valid JSON, no prose or markdown fences, in this exact shape:\n{"source":"url","title":"page title","fields":["f1","f2"],"count":0,"data":[...]}'},
@@ -116,6 +157,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
           const reader=r.body.getReader();
           const decoder=new TextDecoder();
           let buf='',accumulated='',thinkingText='';
+          P.addLog(ps, logEl, 'Streaming response…');
           while(true){
             const{done,value}=await reader.read();
             if(done)break;
@@ -129,21 +171,35 @@ import AppLayout from '../../layouts/AppLayout.astro';
                 const tok=obj?.message?.content||'';
                 const think=obj?.message?.thinking||'';
                 if(think)thinkingText+=think;
-                if(tok)accumulated+=tok;
-                if(tok) resultContent.textContent=accumulated;
-                if(obj?.done)break;
+                if(tok){
+                  accumulated+=tok;
+                  resultContent.textContent=accumulated;
+                  const tc=P.tick(ps);
+                  if(tc%20===0){
+                    const st=P.stats(ps);
+                    statusTxt.textContent=`AI extracting… ${st.count} tokens · ${st.tps} tok/s`;
+                  }
+                }
+                if(obj?.done){ if(obj.eval_count) ps.tc=obj.eval_count; break; }
               }catch(pe:any){if(pe.message&&!pe.message.includes('JSON'))throw pe;}
             }
           }
           const extracted=accumulated||thinkingText||'';
           if(!extracted) resultContent.textContent='Model did not respond.';
           else resultContent.textContent=extracted;
+
+          const totalMs=P.stopTimer(ps);
+          const finalStats=P.stats(ps);
+          P.addLog(ps, logEl, `Complete in ${P.fmt(totalMs)} — ${finalStats.count} tokens`, 'log-done');
+          resultStats.innerHTML=`<span class="stat-sep">·</span> ${P.fmt(totalMs)} <span class="stat-sep">·</span> ${finalStats.count} tokens`;
+          pulseDot.className='w-1.5 h-1.5 rounded-full bg-green';
+
           fetch(`/api/tasks/${tid}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'success',result:{extracted}})}).catch(()=>{});
           setStep(4,'Done!');
-          setTimeout(()=>document.getElementById('status-box')!.classList.add('hidden'),1000);
           scraperDone();
         }catch(e:any){
-          document.getElementById('status-box')!.classList.add('hidden');
+          P.stopTimer(ps);
+          P.addLog(ps, logEl, `Error: ${e.message}`, 'log-error');
           document.getElementById('error-box')!.classList.remove('hidden');
           document.getElementById('error-txt')!.textContent=`AI Error: ${e.message}. Please try again shortly.`;
           resultBox.classList.add('hidden');
@@ -151,7 +207,8 @@ import AppLayout from '../../layouts/AppLayout.astro';
         }
       }
       if(msg.type==='task_updated'&&msg.task?.id===tid&&msg.task?.status==='failed'){
-        document.getElementById('status-box')!.classList.add('hidden');
+        P.stopTimer(ps);
+        P.addLog(ps, logEl, `Failed: ${msg.task.error??'Unknown error'}`, 'log-error');
         document.getElementById('error-box')!.classList.remove('hidden');
         document.getElementById('error-txt')!.textContent=msg.task.error??'Failed';
         scraperDone();

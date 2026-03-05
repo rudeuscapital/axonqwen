@@ -10,7 +10,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
           <div class="text-6xl text-muted/30">◈</div>
           <div>
             <h3 class="font-display font-bold text-white text-xl mb-2">AxonQwen Chat</h3>
-            <p class="text-muted text-sm max-w-sm">Qwen3.5 running locally via Ollama. Ask anything about automation.</p>
+            <p class="text-muted text-sm max-w-sm">Qwen3.5 powered by Ollama. Ask anything about automation.</p>
           </div>
           <div class="grid grid-cols-1 gap-2 w-full max-w-md" id="quick-actions">
             <button class="qa text-left text-xs text-muted px-4 py-3 rounded-lg border border-dim hover:border-accent/30 hover:text-accent hover:bg-dim/50 transition-all font-mono">List the steps to scrape a product page</button>
@@ -21,8 +21,9 @@ import AppLayout from '../../layouts/AppLayout.astro';
         </div>
       </div>
       <!-- Progress -->
-      <div id="chat-progress" class="hidden border-t border-accent/20 px-4 py-2">
-        <div id="chat-steps" class="flex items-center"></div>
+      <div id="chat-progress" class="hidden border-t border-accent/20 px-4 py-2 flex items-center gap-3">
+        <div id="chat-steps" class="flex items-center flex-1"></div>
+        <span id="chat-elapsed" class="elapsed-timer"></span>
       </div>
       <!-- Input -->
       <div class="border-t border-dim p-4 flex-shrink-0">
@@ -56,6 +57,9 @@ import AppLayout from '../../layouts/AppLayout.astro';
       <div class="pt-2 border-t border-dim space-y-2 text-[11px]">
         <div class="flex justify-between"><span class="text-muted">Messages</span><span id="msg-count" class="text-white">0</span></div>
         <div class="flex justify-between"><span class="text-muted">Status</span><span id="stream-status" class="text-green-400">Ready</span></div>
+        <div class="flex justify-between"><span class="text-muted">Tokens</span><span id="token-stats" class="text-white font-mono">—</span></div>
+        <div class="flex justify-between"><span class="text-muted">Speed</span><span id="speed-stats" class="text-white font-mono">—</span></div>
+        <div class="flex justify-between"><span class="text-muted">Elapsed</span><span id="elapsed-stats" class="text-white font-mono">—</span></div>
       </div>
     </div>
   </div>
@@ -74,6 +78,12 @@ import AppLayout from '../../layouts/AppLayout.astro';
     const streamStatus = document.getElementById('stream-status')!;
     const chatProgress = document.getElementById('chat-progress')!;
     const chatSteps    = document.getElementById('chat-steps')!;
+    const chatElapsed  = document.getElementById('chat-elapsed')!;
+    const tokenStatsEl = document.getElementById('token-stats')!;
+    const speedStatsEl = document.getElementById('speed-stats')!;
+    const elapsedStatsEl = document.getElementById('elapsed-stats')!;
+    const P = (window as any).__aq_progress;
+    let ps = P.create();
 
     const CSTEPS = ['Connecting', 'Thinking', 'Generating', 'Done'];
     function chatSetStep(n: number) {
@@ -160,6 +170,12 @@ import AppLayout from '../../layouts/AppLayout.astro';
       chatProgress.classList.remove('hidden');
       chatSetStep(0);
 
+      ps = P.create();
+      P.startTimer(ps, chatElapsed);
+      tokenStatsEl.textContent = '—';
+      speedStatsEl.textContent = '—';
+      elapsedStatsEl.textContent = '—';
+
       const bubble = appendMsg('assistant', '');
       bubble.innerHTML = '<span class="opacity-40 animate-pulse">▋</span>';
       let accumulated = '';
@@ -220,12 +236,21 @@ import AppLayout from '../../layouts/AppLayout.astro';
               const tok = obj?.message?.content || '';
               const think = obj?.message?.thinking || '';
               if (think) { if (!thinkingText) chatSetStep(1); thinkingText += think; }
-              if (tok) { if (!accumulated) chatSetStep(2); accumulated += tok; }
+              if (tok) {
+                if (!accumulated) chatSetStep(2);
+                accumulated += tok;
+                const tc = P.tick(ps);
+                if (tc % 10 === 0) {
+                  const st = P.stats(ps);
+                  tokenStatsEl.textContent = String(st.count);
+                  speedStatsEl.textContent = st.tps + ' tok/s';
+                }
+              }
               if (think || tok) {
                 bubble.innerHTML = renderBubble(thinkingText, accumulated);
                 messagesEl.scrollTop = messagesEl.scrollHeight;
               }
-              if (obj?.done) break;
+              if (obj?.done) { if (obj.eval_count) ps.tc = obj.eval_count; break; }
             } catch(parseErr: any) {
               if (parseErr.message && !parseErr.message.includes('JSON')) throw parseErr;
             }
@@ -251,6 +276,12 @@ import AppLayout from '../../layouts/AppLayout.astro';
           msgCount.textContent = String(history.length);
         }
       }
+
+      const totalMs = P.stopTimer(ps);
+      const finalStats = P.stats(ps);
+      tokenStatsEl.textContent = String(finalStats.count);
+      speedStatsEl.textContent = finalStats.tps + ' tok/s';
+      elapsedStatsEl.textContent = P.fmt(totalMs);
 
       streaming = false;
       chatSetStep(3);
