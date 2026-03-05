@@ -95,16 +95,16 @@ import AppLayout from '../../layouts/AppLayout.astro';
       if (!imgB64) return;
       vProgress.classList.remove('hidden');
       vSetStep(0, 'Preparing image…');
-      resultArea.innerHTML = '<div class="flex items-center gap-3 text-accent text-sm"><span class="animate-spin">⟳</span> Analyzing via local Ollama…</div>';
+      resultArea.innerHTML = '<div class="flex items-center gap-3 text-accent text-sm"><span class="animate-spin">⟳</span> Analyzing image…</div>';
       analyzeBtn.textContent = '⟳ Analyzing…';
       analyzeBtn.setAttribute('disabled','');
       analyzeBtn.classList.add('opacity-60');
       copyBtn.classList.add('hidden');
-      vSetStep(1, 'Sending image to Ollama…');
+      vSetStep(1, 'Sending image to AI service…');
       try {
         let settings: any = {};
         try { settings = JSON.parse(localStorage.getItem('axonqwen-settings') || '{}'); } catch {}
-        const ollamaUrl = settings.ollamaUrl || (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'http://localhost:11434' : location.origin + '/ollama');
+        const ollamaUrl = settings.ollamaUrl || (location.origin + '/ollama');
         const r = await fetch(`${ollamaUrl}/api/chat`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -118,7 +118,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
             ],
           }),
         });
-        if (!r.ok) throw new Error(`Ollama error: ${r.status}. Make sure Ollama is running.`);
+        if (!r.ok) throw new Error(`AI service error: ${r.status}. Please try again.`);
         if (!r.body) throw new Error('No response body');
 
         const reader = r.body.getReader();
@@ -163,7 +163,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
         setTimeout(()=>vProgress.classList.add('hidden'),1500);
         copyBtn.classList.remove('hidden');
       } catch(e:any) {
-        resultArea.innerHTML = `<div class="space-y-2"><p style="color:#ff4444;font-weight:600;">Error: ${e.message}</p><p class="text-muted text-xs">Make sure Ollama is running on your machine.</p></div>`;
+        resultArea.innerHTML = `<div class="space-y-2"><p style="color:#ff4444;font-weight:600;">Error: ${e.message}</p><p class="text-muted text-xs">AI service unavailable. Please try again shortly.</p></div>`;
         vProgress.classList.add('hidden');
       }
       analyzeBtn.textContent = '◑ Analyze Image';

@@ -19,11 +19,9 @@ export interface AxonQwenSettings {
   systemPrompt: string;
 }
 
-// If accessed from a domain (not localhost), default to /ollama proxy
+// Always use the /ollama proxy (Express → VPS Ollama)
 function defaultOllamaUrl(): string {
-  if (typeof location === 'undefined') return 'http://localhost:11434';
-  const host = location.hostname;
-  if (host === 'localhost' || host === '127.0.0.1') return 'http://localhost:11434';
+  if (typeof location === 'undefined') return 'http://127.0.0.1:11434';
   return `${location.origin}/ollama`;
 }
 

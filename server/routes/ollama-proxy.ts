@@ -1,7 +1,6 @@
 /**
- * Proxy /ollama/* → localhost:11434/*
- * Solves mixed content & CORS issues for VPS deployments.
- * Browser → https://domain.com/ollama/api/chat → Express → localhost:11434/api/chat
+ * Proxy /ollama/* → VPS Ollama (127.0.0.1:11434)
+ * Browser → https://axonqwen.xyz/ollama/api/chat → Express → 127.0.0.1:11434/api/chat
  */
 import { Router } from 'express';
 import type { Request, Response } from 'express';

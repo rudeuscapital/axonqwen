@@ -83,7 +83,7 @@ wss.on('connection', (ws) => {
 
 httpServer.listen(PORT, () => {
   log('INFO', `[AxonQwen] Express API server on :${PORT}`);
-  log('INFO', `[AxonQwen] WebSocket at ws://localhost:${PORT}/_ws`);
+  log('INFO', `[AxonQwen] WebSocket at ws://0.0.0.0:${PORT}/_ws`);
   if (!isDev) log('INFO', `[AxonQwen] Serving static files from ./dist`);
   else log('INFO', `[AxonQwen] Dev mode — Astro serves frontend on :4321`);
 });

@@ -1,8 +1,8 @@
 /**
  * src/lib/ollama-client.ts
  * ──────────────────────────────────────────────────────────────
- * Browser-only module: fetches directly to user's local Ollama.
- * No server proxy needed — browser → localhost:11434.
+ * Browser-only module: fetches Ollama via the /ollama proxy.
+ * Browser → origin/ollama → Express → VPS Ollama.
  * ──────────────────────────────────────────────────────────────
  */
 
@@ -21,7 +21,7 @@ export interface OllamaStatusResult {
   url:    string;
 }
 
-/** Check local Ollama connectivity. Never throws. */
+/** Check Ollama connectivity. Never throws. */
 export async function ollamaStatusDirect(): Promise<OllamaStatusResult> {
   const { ollamaUrl } = getSettings();
   try {

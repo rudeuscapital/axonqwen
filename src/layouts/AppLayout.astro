@@ -1,5 +1,5 @@
 ---
-// AppLayout.astro — Ollama status checked client-side (user's local Ollama)
+// AppLayout.astro — Ollama status checked client-side via /ollama proxy
 import '../styles/global.css';
 
 const { title = 'Dashboard', active = 'dashboard' } = Astro.props;
@@ -57,7 +57,7 @@ const nav = [
 
     <div class="px-5 py-4 border-t border-dim">
       <div class="text-[10px] text-muted/50">AxonQwen v1.0.0 — Static</div>
-      <div class="text-[10px] text-muted/30 mt-0.5" id="ollama-url-display">localhost:11434</div>
+      <div class="text-[10px] text-muted/30 mt-0.5" id="ollama-url-display">axonqwen.xyz/ollama</div>
     </div>
   </aside>
 
@@ -74,13 +74,13 @@ const nav = [
     <div id="ollama-banner" class="bg-accent2/10 border-b border-accent2/20 px-6 py-3 items-center gap-4 flex-shrink-0" style="display:none">
       <div class="flex items-center gap-2 text-accent2 text-sm font-mono">
         <span class="w-2 h-2 rounded-full bg-accent2 animate-pulse-dot flex-shrink-0"></span>
-        <span class="font-bold">Ollama disconnected</span>
+        <span class="font-bold">Ollama service unavailable</span>
       </div>
       <p class="text-accent2/70 text-xs font-mono hidden sm:block" id="ollama-banner-msg">
-        — Make sure Ollama is installed and running on your machine.
+        — The AI service is temporarily unavailable. Please try again shortly.
       </p>
-      <a href="/#quickstart" class="ml-auto text-xs px-3 py-1.5 rounded-lg bg-accent2/20 border border-accent2/30 text-accent2 hover:bg-accent2/30 transition-all font-mono flex-shrink-0 whitespace-nowrap">
-        View Setup Guide →
+      <a href="/app/settings" class="ml-auto text-xs px-3 py-1.5 rounded-lg bg-accent2/20 border border-accent2/30 text-accent2 hover:bg-accent2/30 transition-all font-mono flex-shrink-0 whitespace-nowrap">
+        Check Settings →
       </a>
     </div>
 
@@ -91,7 +91,7 @@ const nav = [
 
   <!-- Client-side: Ollama status check + WebSocket -->
   <script>
-    // ── Check user's local Ollama ──
+    // ── Check Ollama status via /ollama proxy ──
     (async function checkOllamaStatus() {
       const dot    = document.getElementById('status-dot');
       const text   = document.getElementById('status-text');
@@ -101,7 +101,7 @@ const nav = [
 
       let settings: any = {};
       try { settings = JSON.parse(localStorage.getItem('axonqwen-settings') || '{}'); } catch {}
-      const url = settings.ollamaUrl || (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'http://localhost:11434' : location.origin + '/ollama');
+      const url = settings.ollamaUrl || (location.origin + '/ollama');
 
       if (urlEl) urlEl.textContent = url.replace(/^https?:\/\//, '');
 
@@ -117,7 +117,7 @@ const nav = [
         if (dot)  { dot.className = 'w-2 h-2 rounded-full bg-accent2 animate-pulse-dot'; }
         if (text) { text.textContent = 'Ollama offline'; }
         if (banner) { banner.style.display = 'flex'; }
-        if (bannerMsg) { bannerMsg.innerHTML = `— Cannot connect to <code class="text-accent2">${url}</code>. Make sure Ollama is installed and running.`; }
+        if (bannerMsg) { bannerMsg.innerHTML = `— Cannot reach the AI service at <code class="text-accent2">${url}</code>. Please try again shortly.`; }
       }
       setTimeout(checkOllamaStatus, 30000);
     })();

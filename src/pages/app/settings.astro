@@ -19,10 +19,10 @@ import AppLayout from '../../layouts/AppLayout.astro';
       <div>
         <label class="text-[10px] text-muted uppercase tracking-widest block mb-2">Ollama URL</label>
         <div class="flex gap-2">
-          <input id="ollama-url" type="text" class="field flex-1 font-mono text-sm" placeholder="http://localhost:11434"/>
+          <input id="ollama-url" type="text" class="field flex-1 font-mono text-sm" placeholder="Ollama API endpoint"/>
           <button id="test-conn-btn" class="btn-secondary text-xs px-4 whitespace-nowrap">Test Connection</button>
         </div>
-        <p class="text-[10px] text-muted/50 mt-1">URL of Ollama running on your machine (default: http://localhost:11434)</p>
+        <p class="text-[10px] text-muted/50 mt-1">Ollama API endpoint (default: managed by server)</p>
       </div>
       <div id="models-section" style="display:none">
         <p class="text-[10px] text-muted uppercase tracking-widest mb-2">Installed Models</p>
@@ -73,9 +73,8 @@ import AppLayout from '../../layouts/AppLayout.astro';
   </div>
   <script>
     const STORAGE_KEY = 'axonqwen-settings';
-    const _isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
     const DEFAULTS = {
-      ollamaUrl: _isLocal ? 'http://localhost:11434' : location.origin + '/ollama',
+      ollamaUrl: location.origin + '/ollama',
       model:'qwen3.5', numCtx:32768,
       temperature:0.6, maxTokens:4096, systemPrompt:'',
     };
@@ -118,7 +117,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
       const statusEl = document.getElementById('conn-status')!;
       const modelsSection = document.getElementById('models-section')!;
       const modelsList = document.getElementById('models-list')!;
-      const url = urlInput.value.trim() || 'http://localhost:11434';
+      const url = urlInput.value.trim() || DEFAULTS.ollamaUrl;
 
       testBtn.textContent = '⟳ Testing…';
       testBtn.setAttribute('disabled','');
@@ -140,7 +139,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
         }
       } catch {
         statusEl.className = 'text-xs flex items-center gap-2 text-accent2';
-        statusEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span> Offline — make sure Ollama is running';
+        statusEl.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span> Offline — AI service unavailable';
         modelsSection.style.display = 'none';
       } finally {
         testBtn.textContent = 'Test Connection';

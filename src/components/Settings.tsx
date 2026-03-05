@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { fetchOllamaStatus, API_BASE } from '../lib/api';
 
 const DEFAULTS = {
-  ollamaUrl:  'http://localhost:11434',
+  ollamaUrl:  typeof location !== 'undefined' ? location.origin + '/ollama' : '/ollama',
   model:      'qwen3.5',
   numCtx:     65536,
   temperature:0.6,

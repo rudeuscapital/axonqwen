@@ -90,7 +90,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
 
     // Load settings from localStorage
     function loadSettings() {
-      const DEFAULTS = { ollamaUrl:'http://localhost:11434', model:'qwen3.5', temperature:0.6, maxTokens:4096, numCtx:32768, systemPrompt:'' };
+      const DEFAULTS = { ollamaUrl: location.origin + '/ollama', model:'qwen3.5', temperature:0.6, maxTokens:4096, numCtx:32768, systemPrompt:'' };
       try { return { ...DEFAULTS, ...JSON.parse(localStorage.getItem('axonqwen-settings')||'{}') }; } catch { return DEFAULTS; }
     }
     const settings = loadSettings();
@@ -167,7 +167,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
 
       try {
         const s = loadSettings();
-        const ollamaUrl = s.ollamaUrl || (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'http://localhost:11434' : location.origin + '/ollama');
+        const ollamaUrl = s.ollamaUrl || (location.origin + '/ollama');
         const model = modelSel.value || s.model || 'qwen3.5';
         const sysContent = sysPmt.value || s.systemPrompt || 'You are AxonQwen, an enterprise-grade AI automation agent powered by Qwen3.5. Be precise and professional.';
 
@@ -176,7 +176,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
           const ping = await fetch(`${ollamaUrl}/api/tags`, { signal: AbortSignal.timeout(5000) });
           if (!ping.ok) throw new Error('not ok');
         } catch {
-          throw new Error(`Cannot connect to Ollama at ${ollamaUrl}. Make sure Ollama is running.`);
+          throw new Error(`AI service unavailable at ${ollamaUrl}. Please try again shortly.`);
         }
         chatSetStep(1);
 
@@ -200,7 +200,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
         if (!res.ok) {
           let errMsg = `HTTP ${res.status}`;
           try { const b = await res.json(); errMsg = b.error || errMsg; } catch {}
-          if (res.status === 404) errMsg = `Model "${model}" not found. Run: ollama pull ${model}`;
+          if (res.status === 404) errMsg = `Model "${model}" not found. Please check Settings.`;
           throw new Error(errMsg);
         }
         if (!res.body) throw new Error('No response body from Ollama');
@@ -240,10 +240,10 @@ import AppLayout from '../../layouts/AppLayout.astro';
         msgCount.textContent = String(history.length);
       } catch(e: any) {
         const errText = e?.message || 'Unknown error';
-        const isConnection = /failed to fetch|networkerror|abort|cannot connect/i.test(errText);
+        const isConnection = /failed to fetch|networkerror|abort|unavailable/i.test(errText);
         bubble.innerHTML = `<div class="space-y-2">
           <p style="color:#ff4444;font-weight:600;">Error: ${errText.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</p>
-          ${isConnection ? `<p class="text-muted text-xs">Make sure Ollama is running on your machine. Check with: <code class="bg-black/40 px-1.5 py-0.5 rounded text-[11px]">ollama serve</code></p>
+          ${isConnection ? `<p class="text-muted text-xs">The AI service is temporarily unavailable. Please try again in a moment.</p>
           <a href="/app/settings" class="inline-block text-xs text-accent hover:underline">Open Settings →</a>` : ''}
         </div>`;
         if (history.length && history[history.length-1].role === 'user') {

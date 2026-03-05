@@ -90,7 +90,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
         if(msg.step==='scraping')  setStep(2,'Extracting page content…');
       }
       if(msg.type==='scraper_data_ready'&&msg.taskId===tid){
-        setStep(3,'AI extracting data via Ollama…');
+        setStep(3,'AI extracting data…');
         const resultBox=document.getElementById('result-box')!;
         const resultContent=document.getElementById('result-content')!;
         resultBox.classList.remove('hidden');
@@ -98,7 +98,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
         try {
           let settings:any={};
           try{settings=JSON.parse(localStorage.getItem('axonqwen-settings')||'{}');}catch{}
-          const ollamaUrl=settings.ollamaUrl||(location.hostname==='localhost'||location.hostname==='127.0.0.1'?'http://localhost:11434':location.origin+'/ollama');
+          const ollamaUrl=settings.ollamaUrl||(location.origin+'/ollama');
           const r=await fetch(`${ollamaUrl}/api/chat`,{
             method:'POST',headers:{'Content-Type':'application/json'},
             body:JSON.stringify({
@@ -111,7 +111,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
             }),
           });
           if(!r.ok)throw new Error(`Ollama error: ${r.status}`);
-          if(!r.body)throw new Error('No response body');
+          if(!r.body)throw new Error('No response body from AI service');
 
           const reader=r.body.getReader();
           const decoder=new TextDecoder();
@@ -145,7 +145,7 @@ import AppLayout from '../../layouts/AppLayout.astro';
         }catch(e:any){
           document.getElementById('status-box')!.classList.add('hidden');
           document.getElementById('error-box')!.classList.remove('hidden');
-          document.getElementById('error-txt')!.textContent=`AI Error: ${e.message}. Make sure Ollama is running.`;
+          document.getElementById('error-txt')!.textContent=`AI Error: ${e.message}. Please try again shortly.`;
           resultBox.classList.add('hidden');
           scraperDone();
         }
