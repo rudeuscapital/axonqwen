@@ -54,7 +54,10 @@ export function getSession(): AuthSession | null {
     if (!raw) return null;
     const session: AuthSession = JSON.parse(raw);
     // Basic JWT expiry check (decode payload without verification)
-    const payload = JSON.parse(atob(session.token.split('.')[1]));
+    // JWT uses base64url — convert to standard base64 for atob()
+    const b64url = session.token.split('.')[1];
+    const b64 = b64url.replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(b64));
     if (payload.exp * 1000 < Date.now()) {
       localStorage.removeItem(AUTH_KEY);
       return null;
