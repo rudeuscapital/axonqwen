@@ -7,7 +7,8 @@
       "Bash(npx --yes playwright --version)",
       "Bash(npx astro build)",
       "Bash(timeout 5 npx tsx server/index.ts)",
-      "Bash(netstat -ano)"
+      "Bash(netstat -ano)",
+      "Bash(npx tsc --noEmit --project tsconfig.json)"
     ]
   }
 }

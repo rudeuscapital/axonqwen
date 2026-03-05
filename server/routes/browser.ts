@@ -4,7 +4,7 @@ import { createTask, updateTask, elapsed, log, broadcast } from '../store.js';
 const router = Router();
 
 router.post('/api/browser/run', (req, res) => {
-  const { url, instruction, headless = true } = req.body;
+  const { url, instruction } = req.body;
   if (!url || !instruction) {
     return res.status(400).json({ error: 'url and instruction are required' });
   }
@@ -23,7 +23,7 @@ router.post('/api/browser/run', (req, res) => {
       broadcast({ type: 'browser_progress', taskId: task.id, step: 'chromium' });
 
       browser = await chromium.launch({
-        headless,
+        headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
       });
       const ctx  = await browser.newContext({ viewport: { width: 1280, height: 800 } });
