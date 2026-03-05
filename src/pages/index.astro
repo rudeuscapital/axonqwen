@@ -16,15 +16,15 @@ const features = [
 const steps = [
   {
     n:'01',
-    t:'Visit axonqwen.xyz',
-    desc:'Open the platform in your browser. No installation or setup required — everything runs on dedicated infrastructure.',
-    code:'# Open in your browser\nhttps://axonqwen.xyz\n\n# Or go directly to the dashboard\nhttps://axonqwen.xyz/app',
+    t:'Connect Your Wallet',
+    desc:'Visit axonqwen.xyz and connect your crypto wallet. We support MetaMask (EVM), Phantom (Solana), and Tonkeeper (TON).',
+    code:'# Supported wallets\n🦊 MetaMask   — Ethereum, BSC, Polygon, Arbitrum, Base\n👻 Phantom    — Solana\n💎 Tonkeeper  — TON Network\n\n# Go to login\nhttps://axonqwen.xyz/login',
   },
   {
     n:'02',
-    t:'Open the Dashboard',
-    desc:'Navigate to /app to access all five AI agents, view task history, and monitor live activity.',
-    code:'# Dashboard — overview of all agents & tasks\nhttps://axonqwen.xyz/app\n\n# Direct agent links\nhttps://axonqwen.xyz/app/chat\nhttps://axonqwen.xyz/app/browser\nhttps://axonqwen.xyz/app/scraper',
+    t:'Access the Dashboard',
+    desc:'After wallet authentication, you\'re redirected to the dashboard with full access to all five AI agents.',
+    code:'# Dashboard — overview of all agents & tasks\nhttps://axonqwen.xyz/app\n\n# Your wallet is shown in the sidebar\n# Disconnect anytime via the ✕ button',
   },
   {
     n:'03',
@@ -51,12 +51,18 @@ const steps = [
       ))}
     </div>
     <div class="flex items-center gap-2">
+      <!-- Token badge -->
+      <span class="text-[10px] px-3 py-1 rounded-full border font-mono flex items-center gap-2 border-accent/30 text-accent bg-accent/5">
+        <span class="font-bold">$AXQWEN</span>
+      </span>
+      <!-- Buy button -->
+      <a href="#token" class="text-[10px] px-3 py-1.5 rounded-md bg-green/10 text-green border border-green/30 hover:bg-green/20 transition-all font-mono font-bold">Buy $AXQWEN</a>
       <!-- Ollama badge (checked client-side) -->
-      <span id="ollama-badge" class="text-[10px] px-3 py-1 rounded-full border font-mono flex items-center gap-2 border-dim text-muted bg-dim/5">
+      <span id="ollama-badge" class="text-[10px] px-3 py-1 rounded-full border font-mono flex items-center gap-2 border-dim text-muted bg-dim/5 hidden md:flex">
         <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse-dot"></span>
         <span id="ollama-badge-text">Checking…</span>
       </span>
-      <a href="/app" class="text-xs px-4 py-2 rounded-md bg-ink text-paper hover:bg-accent hover:text-black transition-all font-mono font-bold">Open App →</a>
+      <a href="/login" class="text-xs px-4 py-2 rounded-md bg-ink text-paper hover:bg-accent hover:text-black transition-all font-mono font-bold">Connect Wallet →</a>
     </div>
   </nav>
 
@@ -89,8 +95,8 @@ const steps = [
         AxonQwen is a fully managed AI automation platform. Browser automation, visual analysis, smart scraping — powered by Qwen3.5 on dedicated infrastructure at axonqwen.xyz.
       </p>
       <div class="flex items-center gap-3 flex-shrink-0">
-        <a href="#quickstart" class="btn-primary">▶ Get Started</a>
-        <a href="/app" class="btn-secondary">Open App →</a>
+        <a href="/login" class="btn-primary">▶ Connect Wallet</a>
+        <a href="#token" class="btn-secondary">$AXQWEN →</a>
       </div>
     </div>
     <div class="absolute bottom-7 left-1/2 -translate-x-1/2 text-muted text-[10px] uppercase tracking-widest flex flex-col items-center gap-1 animate-bounce">
@@ -617,8 +623,65 @@ ws.onmessage = ({ data }) => {
     </div>
   </section>
 
+  <!-- TOKEN -->
+  <section class="bg-paper2 py-28 px-12" id="token">
+    <div class="max-w-4xl mx-auto">
+      <p class="text-accent text-[10px] uppercase tracking-[.16em] mb-4 reveal">$AXQWEN Token</p>
+      <h2 class="font-display font-extrabold text-ink leading-tight tracking-tight mb-6 reveal delay-100" style="font-size:clamp(32px,4vw,52px)">Power the Network.</h2>
+      <p class="text-muted text-sm leading-relaxed max-w-lg mb-12 reveal delay-200">$AXQWEN is the utility token that powers the AxonQwen ecosystem. Use it to access premium features, stake for priority access, and participate in governance.</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 reveal delay-300">
+        <div class="bg-ink rounded-xl p-6 border border-dim">
+          <div class="text-accent text-2xl mb-3">⬡</div>
+          <h3 class="font-display font-bold text-white text-sm mb-2">Utility</h3>
+          <p class="text-muted text-xs leading-relaxed">Pay for premium agent usage, unlock advanced features, and access higher rate limits with $AXQWEN tokens.</p>
+        </div>
+        <div class="bg-ink rounded-xl p-6 border border-dim">
+          <div class="text-green text-2xl mb-3">◈</div>
+          <h3 class="font-display font-bold text-white text-sm mb-2">Staking</h3>
+          <p class="text-muted text-xs leading-relaxed">Stake $AXQWEN to earn rewards, get priority queue access for AI tasks, and unlock exclusive agent capabilities.</p>
+        </div>
+        <div class="bg-ink rounded-xl p-6 border border-dim">
+          <div class="text-gold text-2xl mb-3">⊕</div>
+          <h3 class="font-display font-bold text-white text-sm mb-2">Governance</h3>
+          <p class="text-muted text-xs leading-relaxed">Hold $AXQWEN to vote on platform features, model selection, and the future direction of AxonQwen development.</p>
+        </div>
+      </div>
+
+      <!-- Contract Address -->
+      <div class="bg-ink rounded-xl border border-dim overflow-hidden reveal">
+        <div class="px-8 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <p class="text-[10px] text-muted uppercase tracking-widest mb-2">Contract Address (CA)</p>
+            <div class="flex items-center gap-3">
+              <code class="text-accent font-mono text-sm font-bold" id="ca-address">Coming Soon</code>
+              <button id="copy-ca" class="text-[10px] px-2 py-1 rounded border border-dim text-muted hover:text-white hover:border-accent/30 transition-all cursor-pointer" style="display:none">Copy</button>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <a href="#token" class="text-sm px-6 py-2.5 rounded-lg bg-green text-ink font-display font-bold hover:bg-green/80 transition-all">Buy $AXQWEN</a>
+            <a href="/login" class="text-sm px-6 py-2.5 rounded-lg bg-accent/10 text-accent border border-accent/30 font-display font-bold hover:bg-accent/20 transition-all">Connect Wallet</a>
+          </div>
+        </div>
+        <div class="px-8 py-4 border-t border-dim flex flex-wrap gap-6">
+          {[
+            ['Network', 'TBA'],
+            ['Total Supply', 'TBA'],
+            ['Tax', '0%'],
+            ['Liquidity', 'Locked'],
+          ].map(([label, value]) => (
+            <div>
+              <span class="text-[10px] text-muted uppercase tracking-widest">{label}</span>
+              <p class="text-white font-mono text-sm font-bold mt-0.5">{value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- CTA -->
-  <section class="bg-paper py-40 px-12 text-center relative overflow-hidden">
+  <section class="bg-ink py-40 px-12 text-center relative overflow-hidden">
     <div class="absolute inset-0 dark-grid-bg opacity-30"></div>
     <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
       <div class="w-[600px] h-[400px] rounded-full bg-accent/5 blur-[80px]"></div>
@@ -628,10 +691,10 @@ ws.onmessage = ({ data }) => {
       <h2 class="font-display font-extrabold text-white leading-tight tracking-tight mb-6 reveal" style="font-size:clamp(40px,6vw,80px)">
         Your AI Workforce.<br/><span class="text-accent">Starts Now.</span>
       </h2>
-      <p class="text-muted text-sm mb-10 max-w-md mx-auto">No setup required. No local installation. Just open and automate.</p>
+      <p class="text-muted text-sm mb-10 max-w-md mx-auto">Connect your wallet and start automating. Powered by $AXQWEN.</p>
       <div class="flex items-center justify-center gap-4 reveal delay-200">
-        <a href="#quickstart" class="btn-primary text-sm px-8 py-3">▶ Start Free</a>
-        <a href="/app" class="btn-secondary text-sm px-8 py-3">Open Dashboard →</a>
+        <a href="/login" class="btn-primary text-sm px-8 py-3">Connect Wallet →</a>
+        <a href="#token" class="text-sm px-6 py-3 rounded-lg bg-green/10 text-green border border-green/30 hover:bg-green/20 transition-all font-display font-bold">Buy $AXQWEN</a>
       </div>
     </div>
   </section>
@@ -640,7 +703,7 @@ ws.onmessage = ({ data }) => {
   <footer class="bg-[#020407] px-12 py-8 flex flex-col md:flex-row items-center justify-between gap-4 border-t border-dim">
     <div class="font-display font-extrabold text-white text-sm">Axon<span class="text-accent">Qwen</span></div>
     <div class="flex gap-6">
-      {[['Features','#features'],['Agents','#agents'],['Usage','#usage'],['Docs','#docs'],['Roadmap','#roadmap'],['Dashboard','/app']].map(([l,h])=>(
+      {[['Features','#features'],['Agents','#agents'],['Usage','#usage'],['$AXQWEN','#token'],['Roadmap','#roadmap'],['Login','/login']].map(([l,h])=>(
         <a href={h} class="text-[11px] text-muted/50 hover:text-white transition-colors font-mono">{l}</a>
       ))}
     </div>

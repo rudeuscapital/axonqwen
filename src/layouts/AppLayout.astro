@@ -55,6 +55,18 @@ const nav = [
       ))}
     </nav>
 
+    <!-- Wallet info -->
+    <div class="mx-4 mb-2 px-3 py-2.5 rounded-lg bg-wire border border-dim" id="wallet-info" style="display:none">
+      <div class="flex items-center gap-2">
+        <span id="wallet-chain-icon" class="text-sm"></span>
+        <div class="flex-1 min-w-0">
+          <div class="text-[11px] text-white font-bold truncate" id="wallet-addr"></div>
+          <div class="text-[9px] text-muted uppercase tracking-wider" id="wallet-chain"></div>
+        </div>
+        <button id="wallet-disconnect" class="text-[9px] text-accent2 hover:text-accent2/80 transition-colors cursor-pointer" title="Disconnect">✕</button>
+      </div>
+    </div>
+
     <div class="px-5 py-4 border-t border-dim">
       <div class="text-[10px] text-muted/50">AxonQwen v1.0.0 — Static</div>
       <div class="text-[10px] text-muted/30 mt-0.5" id="ollama-url-display">axonqwen.xyz/ollama</div>
@@ -67,6 +79,7 @@ const nav = [
       <h1 class="font-display font-bold text-sm text-white/80 tracking-wide uppercase">{title}</h1>
       <div class="flex items-center gap-3">
         <span id="ws-badge" class="text-[10px] px-2.5 py-1 rounded-full border border-dim text-muted font-mono">● WS</span>
+        <span id="header-wallet" class="text-[10px] px-2.5 py-1 rounded-full border border-accent/20 text-accent font-mono" style="display:none"></span>
         <a href="/" class="text-xs text-muted hover:text-white transition-colors px-3 py-1.5 rounded-lg border border-dim">← Home</a>
       </div>
     </header>
@@ -88,6 +101,41 @@ const nav = [
       <slot/>
     </main>
   </div>
+
+  <!-- Auth guard: redirect to /login if no wallet session -->
+  <script>
+    import { getSession, clearSession } from '../lib/wallet-auth';
+
+    const __session = getSession();
+    if (!__session) {
+      window.location.href = '/login';
+    } else {
+      // Show wallet info in sidebar
+      const walletInfo  = document.getElementById('wallet-info');
+      const walletAddr  = document.getElementById('wallet-addr');
+      const walletChain = document.getElementById('wallet-chain');
+      const chainIcon   = document.getElementById('wallet-chain-icon');
+      const headerWallet = document.getElementById('header-wallet');
+      const disconnectBtn = document.getElementById('wallet-disconnect');
+
+      const chainIcons: Record<string, string> = { evm: '🦊', solana: '👻', ton: '💎' };
+      const chainNames: Record<string, string> = { evm: 'EVM', solana: 'Solana', ton: 'TON' };
+
+      if (walletInfo) walletInfo.style.display = 'block';
+      if (walletAddr) walletAddr.textContent = __session.user.shortAddress;
+      if (walletChain) walletChain.textContent = chainNames[__session.user.chain] || __session.user.chain;
+      if (chainIcon) chainIcon.textContent = chainIcons[__session.user.chain] || '⬡';
+      if (headerWallet) {
+        headerWallet.textContent = `${chainIcons[__session.user.chain] || '⬡'} ${__session.user.shortAddress}`;
+        headerWallet.style.display = 'inline';
+      }
+
+      disconnectBtn?.addEventListener('click', () => {
+        clearSession();
+        window.location.href = '/login';
+      });
+    }
+  </script>
 
   <!-- Client-side: Ollama status check + WebSocket -->
   <script>

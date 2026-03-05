@@ -20,6 +20,7 @@ import scraperRouter  from './routes/scraper.js';
 import browserRouter  from './routes/browser.js';
 import visionRouter   from './routes/vision.js';
 import ollamaProxy   from './routes/ollama-proxy.js';
+import authRouter    from './routes/auth.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -35,6 +36,7 @@ if (isDev) {
 app.use(express.json({ limit: '10mb' }));
 
 // API routes
+app.use(authRouter);
 app.use(healthRouter);
 app.use(tasksRouter);
 app.use(monitorsRouter);

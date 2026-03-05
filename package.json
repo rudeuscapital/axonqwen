@@ -4,33 +4,38 @@
   "version": "1.0.0",
   "description": "AxonQwen — Enterprise AI Automation Platform (Astro Static + Express API)",
   "scripts": {
-    "dev":        "concurrently -n astro,api -c cyan,green \"astro dev\" \"tsx watch server/index.ts\"",
-    "dev:astro":  "astro dev",
+    "dev": "concurrently -n astro,api -c cyan,green \"astro dev\" \"tsx watch server/index.ts\"",
+    "dev:astro": "astro dev",
     "dev:server": "tsx watch server/index.ts",
-    "build":      "astro build",
-    "start":      "NODE_ENV=production tsx server/index.ts"
+    "build": "astro build",
+    "start": "NODE_ENV=production tsx server/index.ts"
   },
   "dependencies": {
-    "@astrojs/react":    "^3.6.0",
+    "@astrojs/react": "^3.6.0",
     "@astrojs/tailwind": "^5.1.0",
-    "astro":             "^4.16.0",
-    "cors":              "^2.8.5",
-    "express":           "^4.21.0",
-    "react":             "^18.3.1",
-    "react-dom":         "^18.3.1",
-    "tailwindcss":       "^3.4.0",
-    "playwright":        "^1.45.0",
-    "dotenv":            "^16.3.1",
-    "ws":                "^8.14.0"
+    "@types/jsonwebtoken": "^9.0.10",
+    "astro": "^4.16.0",
+    "bs58": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "ethers": "^6.16.0",
+    "express": "^4.21.0",
+    "jsonwebtoken": "^9.0.3",
+    "playwright": "^1.45.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^3.4.0",
+    "tweetnacl": "^1.0.3",
+    "ws": "^8.14.0"
   },
   "devDependencies": {
-    "@types/cors":         "^2.8.0",
-    "@types/express":      "^4.17.0",
-    "@types/react":        "^18.3.0",
-    "@types/react-dom":    "^18.3.0",
-    "@types/ws":           "^8.5.0",
-    "concurrently":        "^9.0.0",
-    "tsx":                 "^4.19.0",
-    "typescript":          "^5.5.0"
+    "@types/cors": "^2.8.0",
+    "@types/express": "^4.17.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "@types/ws": "^8.5.0",
+    "concurrently": "^9.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
   }
 }

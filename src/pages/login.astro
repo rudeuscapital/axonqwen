@@ -1,0 +1,236 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Login">
+  <div class="min-h-screen bg-ink flex items-center justify-center px-6 relative overflow-hidden">
+    <!-- Background effects -->
+    <div class="absolute inset-0 grid-bg opacity-30"></div>
+    <div class="absolute inset-0 noise pointer-events-none"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-accent/5 blur-[100px] pointer-events-none"></div>
+
+    <div class="relative z-10 w-full max-w-md">
+      <!-- Logo -->
+      <div class="text-center mb-10">
+        <a href="/" class="inline-flex items-center gap-3 font-display font-extrabold text-2xl text-white tracking-tight">
+          <img src="/logo.png" alt="AxonQwen" class="w-10 h-10 object-contain"/>
+          Axon<span class="text-accent">Qwen</span>
+        </a>
+        <p class="text-muted text-sm mt-3 font-mono">Connect your wallet to access the platform</p>
+      </div>
+
+      <!-- Wallet options -->
+      <div class="space-y-3" id="wallet-options">
+        <!-- EVM (MetaMask) -->
+        <button id="btn-evm" class="wallet-btn group" data-chain="evm">
+          <div class="flex items-center gap-4 flex-1">
+            <div class="w-11 h-11 rounded-xl bg-[#F6851B]/10 flex items-center justify-center text-xl flex-shrink-0">
+              <span>🦊</span>
+            </div>
+            <div class="text-left">
+              <div class="font-display font-bold text-white text-sm group-hover:text-accent transition-colors">MetaMask / EVM</div>
+              <div class="text-[11px] text-muted font-mono mt-0.5">Ethereum · BSC · Polygon · Arbitrum · Base</div>
+            </div>
+          </div>
+          <span class="text-muted text-xs group-hover:text-accent transition-colors">→</span>
+        </button>
+
+        <!-- Solana (Phantom) -->
+        <button id="btn-solana" class="wallet-btn group" data-chain="solana">
+          <div class="flex items-center gap-4 flex-1">
+            <div class="w-11 h-11 rounded-xl bg-[#AB9FF2]/10 flex items-center justify-center text-xl flex-shrink-0">
+              <span>👻</span>
+            </div>
+            <div class="text-left">
+              <div class="font-display font-bold text-white text-sm group-hover:text-accent transition-colors">Phantom / Solana</div>
+              <div class="text-[11px] text-muted font-mono mt-0.5">Solana Mainnet · Devnet</div>
+            </div>
+          </div>
+          <span class="text-muted text-xs group-hover:text-accent transition-colors">→</span>
+        </button>
+
+        <!-- TON -->
+        <button id="btn-ton" class="wallet-btn group" data-chain="ton">
+          <div class="flex items-center gap-4 flex-1">
+            <div class="w-11 h-11 rounded-xl bg-[#0098EA]/10 flex items-center justify-center text-xl flex-shrink-0">
+              <span>💎</span>
+            </div>
+            <div class="text-left">
+              <div class="font-display font-bold text-white text-sm group-hover:text-accent transition-colors">TON Wallet</div>
+              <div class="text-[11px] text-muted font-mono mt-0.5">Tonkeeper · TON Space · MyTonWallet</div>
+            </div>
+          </div>
+          <span class="text-muted text-xs group-hover:text-accent transition-colors">→</span>
+        </button>
+      </div>
+
+      <!-- Status message -->
+      <div id="login-status" class="hidden mt-6 px-5 py-4 rounded-xl border text-sm font-mono text-center"></div>
+
+      <!-- Loading state -->
+      <div id="login-loading" class="hidden mt-6 text-center">
+        <div class="inline-flex items-center gap-3 text-accent text-sm font-mono">
+          <span class="w-2 h-2 rounded-full bg-accent animate-pulse"></span>
+          <span id="loading-text">Connecting wallet…</span>
+        </div>
+      </div>
+
+      <!-- Network info (for EVM) -->
+      <div id="network-info" class="hidden mt-4 px-4 py-3 rounded-lg bg-wire border border-dim">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] text-muted font-mono">Network</span>
+          <span id="network-name" class="text-[11px] text-accent font-mono font-bold"></span>
+        </div>
+      </div>
+
+      <!-- Supported networks -->
+      <div class="mt-10 pt-8 border-t border-dim">
+        <p class="text-[10px] text-muted uppercase tracking-widest mb-4 text-center">Supported Networks</p>
+        <div class="flex flex-wrap justify-center gap-2">
+          {['Ethereum','BSC','Polygon','Arbitrum','Base','Avalanche','Optimism','Solana','TON'].map(n => (
+            <span class="text-[10px] px-2.5 py-1 rounded-full border border-dim text-muted/60 font-mono">{n}</span>
+          ))}
+        </div>
+      </div>
+
+      <!-- Token info -->
+      <div class="mt-8 text-center">
+        <div class="inline-flex items-center gap-2 bg-wire border border-dim rounded-full px-4 py-2">
+          <span class="text-accent font-display font-bold text-xs">$AXQWEN</span>
+          <span class="text-dim">|</span>
+          <span class="text-muted text-[10px] font-mono">CA: Coming Soon</span>
+        </div>
+      </div>
+
+      <!-- Back link -->
+      <div class="mt-8 text-center">
+        <a href="/" class="text-muted text-xs hover:text-accent transition-colors font-mono">← Back to Home</a>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .wallet-btn {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 16px 20px;
+      background: #0e1120;
+      border: 1px solid #1a1f35;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .wallet-btn:hover {
+      border-color: #00c8ff30;
+      background: #111730;
+      transform: translateY(-1px);
+    }
+    .wallet-btn:active {
+      transform: translateY(0);
+    }
+    .wallet-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .wallet-btn:disabled:hover {
+      border-color: #1a1f35;
+      background: #0e1120;
+    }
+  </style>
+
+  <script>
+    import { getSession, connectWallet, getEVMChainInfo, type ChainType } from '../lib/wallet-auth';
+
+    // If already logged in, redirect to app
+    const session = getSession();
+    if (session) {
+      window.location.href = '/app';
+    }
+
+    const statusEl   = document.getElementById('login-status')!;
+    const loadingEl  = document.getElementById('login-loading')!;
+    const loadingTxt = document.getElementById('loading-text')!;
+    const networkEl  = document.getElementById('network-info')!;
+    const networkName = document.getElementById('network-name')!;
+    const buttons    = document.querySelectorAll<HTMLButtonElement>('.wallet-btn');
+
+    function showStatus(msg: string, type: 'success' | 'error') {
+      statusEl.textContent = msg;
+      statusEl.className = type === 'success'
+        ? 'mt-6 px-5 py-4 rounded-xl border text-sm font-mono text-center border-green/30 text-green bg-green/5'
+        : 'mt-6 px-5 py-4 rounded-xl border text-sm font-mono text-center border-accent2/30 text-accent2 bg-accent2/5';
+    }
+
+    function setLoading(active: boolean, text = 'Connecting wallet…') {
+      loadingEl.className = active ? 'mt-6 text-center' : 'hidden mt-6 text-center';
+      loadingTxt.textContent = text;
+      buttons.forEach(b => b.disabled = active);
+    }
+
+    // Check wallet availability
+    (async () => {
+      const w = window as any;
+      const hasEVM = !!w.ethereum;
+      const hasSolana = !!w.phantom?.solana || !!w.solana?.isPhantom;
+      const hasTON = !!w.tonconnect || !!w.ton;
+
+      const btnEVM = document.getElementById('btn-evm') as HTMLButtonElement;
+      const btnSol = document.getElementById('btn-solana') as HTMLButtonElement;
+      const btnTON = document.getElementById('btn-ton') as HTMLButtonElement;
+
+      if (!hasEVM) {
+        const label = btnEVM.querySelector('.font-display')!;
+        label.textContent = 'MetaMask / EVM (Not Detected)';
+      }
+      if (!hasSolana) {
+        const label = btnSol.querySelector('.font-display')!;
+        label.textContent = 'Phantom / Solana (Not Detected)';
+      }
+      if (!hasTON) {
+        const label = btnTON.querySelector('.font-display')!;
+        label.textContent = 'TON Wallet (Not Detected)';
+      }
+
+      // Show current EVM network if available
+      if (hasEVM) {
+        const chain = await getEVMChainInfo();
+        if (chain) {
+          networkEl.className = 'mt-4 px-4 py-3 rounded-lg bg-wire border border-dim';
+          networkName.textContent = chain.name;
+        }
+
+        // Listen for chain changes
+        w.ethereum.on?.('chainChanged', () => {
+          window.location.reload();
+        });
+      }
+    })();
+
+    // Wallet connection handlers
+    buttons.forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const chain = btn.dataset.chain as ChainType;
+
+        setLoading(true, chain === 'evm' ? 'Approve in MetaMask…'
+                       : chain === 'solana' ? 'Approve in Phantom…'
+                       : 'Approve in TON Wallet…');
+        statusEl.className = 'hidden mt-6 px-5 py-4 rounded-xl border text-sm font-mono text-center';
+
+        try {
+          const session = await connectWallet(chain);
+          showStatus(`Connected: ${session.user.shortAddress}`, 'success');
+          setLoading(false);
+
+          // Redirect to app after brief delay
+          setTimeout(() => {
+            window.location.href = '/app';
+          }, 800);
+        } catch (err: any) {
+          showStatus(err.message || 'Connection failed', 'error');
+          setLoading(false);
+        }
+      });
+    });
+  </script>
+</Base>
